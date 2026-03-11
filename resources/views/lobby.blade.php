@@ -30,7 +30,7 @@
                             <img src="{{ $player->avatar }}" alt="Avatar {{ $player->name }}" class="h-10 w-10 rounded-full border border-blue-500/60">
                             <div>
                                 <p class="font-semibold">{{ $player->name }}</p>
-                                <p class="text-xs text-slate-400">Steam: {{ $player->steam_id }}</p>
+                                <p class="text-xs text-slate-400">Rango: {{ $player->rank_points }}</p>
                             </div>
                         </div>
                     @endforeach
@@ -47,7 +47,6 @@
                         <p class="text-xs text-blue-200">IP del servidor</p>
                         <p id="server-address" class="font-mono text-sm text-white">{{ $server->ip }}:{{ $server->port }}</p>
                         <p id="connect-command" class="mt-2 font-mono text-xs text-blue-200">connect {{ $server->ip }}:{{ $server->port }}</p>
-                        <p id="connect-command-short" class="mt-1 font-mono text-xs text-blue-200">connect {{ $server->ip }}</p>
                     </div>
 
                     <a id="join-match-link" href="steam://connect/{{ $server->ip }}:{{ $server->port }}" class="mt-4 inline-block w-full rounded-md bg-blue-600 px-4 py-3 text-center text-sm font-bold uppercase tracking-wide text-white hover:bg-blue-500">
@@ -87,7 +86,6 @@
     const waitingPanel = document.getElementById('waiting-panel');
     const serverAddress = document.getElementById('server-address');
     const connectCommand = document.getElementById('connect-command');
-    const connectCommandShort = document.getElementById('connect-command-short');
     const joinMatchLink = document.getElementById('join-match-link');
     const playersGrid = document.getElementById('players-grid');
 
@@ -104,14 +102,14 @@
         playersGrid.innerHTML = users.map((user) => {
             const name = escapeHtml(user.name ?? 'Steam User');
             const avatar = escapeHtml(user.avatar ?? 'https://placehold.co/40x40');
-            const steamId = escapeHtml(user.steam_id ?? 'N/A');
+            const rank = escapeHtml(user.rank_points ?? 0);
 
             return `
                 <div class="flex items-center gap-3 rounded-lg border border-slate-800 bg-slate-950/70 px-4 py-3">
                     <img src="${avatar}" alt="Avatar ${name}" class="h-10 w-10 rounded-full border border-blue-500/60">
                     <div>
                         <p class="font-semibold">${name}</p>
-                        <p class="text-xs text-slate-400">Steam: ${steamId}</p>
+                        <p class="text-xs text-slate-400">Rango: ${rank}</p>
                     </div>
                 </div>
             `;
@@ -143,7 +141,6 @@
             const address = `${data.server.ip}:${data.server.port}`;
             serverAddress.textContent = address;
             connectCommand.textContent = `connect ${address}`;
-            connectCommandShort.textContent = `connect ${data.server.ip}`;
             joinMatchLink.setAttribute('href', `steam://connect/${address}`);
 
             renderPlayers(data.users);

@@ -8,6 +8,7 @@ use App\Models\Server;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class LobbyController extends Controller
 {
@@ -52,9 +53,9 @@ class LobbyController extends Controller
             'is_ready' => $isReady,
             'users' => $lobby->users->map(fn ($user) => [
                 'id' => $user->id,
-                'name' => $user->name,
+                'name' => $user->steam_nickname ?? $user->name,
                 'avatar' => $user->avatar,
-                'steam_id' => $user->steam_id,
+                'rank_points' => $user->rank_points,
             ])->values(),
         ]);
     }
@@ -67,25 +68,30 @@ class LobbyController extends Controller
         $displayRequiredPlayers = min($server->max_players, 10);
         $revealThreshold = 1;
 
-        $existingLobby = $server->lobbies()
+        $lobby = $server->lobbies()
             ->whereIn('status', ['waiting', 'live'])
-            ->whereHas('users', fn ($query) => $query->where('users.id', $userId))
+            ->withCount('users')
+            ->havingRaw('users_count < required_players')
+            ->orderByRaw("case when status = 'waiting' then 0 else 1 end")
             ->latest('id')
             ->first();
 
-        $lobby = $existingLobby ?: $server->lobbies()->firstOrCreate(
-            ['status' => 'waiting'],
-            [
+        if (! $lobby) {
+            $lobby = $server->lobbies()->create([
+                'status' => 'waiting',
                 'name' => sprintf('Lobby %s #%s', $server->name, now()->format('His')),
                 'required_players' => $displayRequiredPlayers,
-            ]
-        );
+            ]);
+        }
 
         if ($lobby->required_players !== $displayRequiredPlayers) {
             $lobby->update(['required_players' => $displayRequiredPlayers]);
         }
 
-        if (! $lobby->users()->where('users.id', $userId)->exists()) {
+        $alreadyInLobby = $lobby->users()->where('users.id', $userId)->exists();
+        $currentCount = $lobby->users()->count();
+
+        if (! $alreadyInLobby && $currentCount < $lobby->required_players) {
             $lobby->users()->syncWithoutDetaching([$userId]);
         }
 
@@ -103,7 +109,7 @@ class LobbyController extends Controller
             'current_players' => $playerCount,
         ]);
 
-        $lobby = $lobby->fresh()->load('users:id,name,avatar,steam_id')->loadCount('users');
+        $lobby = $lobby->fresh()->load('users:id,name,steam_nickname,avatar,rank_points')->loadCount('users');
         $server = $server->fresh();
 
         $isReady = $lobby->users_count >= $revealThreshold;

@@ -31,5 +31,25 @@ class ServerSeeder extends Seeder
                 'current_players' => 0,
             ]
         );
+
+        Server::updateOrCreate(
+            ['name' => 'Matchmaking Europa #3'],
+            [
+                'ip' => '203.0.113.88',
+                'port' => 27015,
+                'max_players' => 10,
+                'current_players' => 0,
+            ]
+        );
+
+        Server::updateOrCreate(
+            ['name' => 'Wingman Europa #1'],
+            [
+                'ip' => '185.47.131.129',
+                'port' => 27016,
+                'max_players' => 4,
+                'current_players' => 0,
+            ]
+        );
     }
 }
