@@ -17,14 +17,12 @@ class StoreController extends Controller
     private function weaponMap(): array
     {
         return [
-            'Sniper Rifles' => ['All', 'AWP', 'SSG 08', 'G3SG1', 'SCAR-20'],
-            'Rifles' => ['All', 'AK-47', 'M4A1-S', 'M4A4', 'FAMAS', 'Galil AR', 'AUG', 'SG 553'],
+            'All' => ['All'],
+            'Pistols' => ['All', 'Glock-18', 'USP-S', 'P2000', 'Desert Eagle', 'P250', 'Tec-9', 'Five-SeveN', 'CZ75-Auto', 'Dual Berettas', 'R8 Revolver'],
+            'Heavy' => ['All', 'Nova', 'XM1014', 'Sawed-Off', 'MAG-7', 'M249', 'Negev'],
             'SMGs' => ['All', 'MAC-10', 'MP9', 'MP7', 'MP5-SD', 'UMP-45', 'P90', 'PP-Bizon'],
-            'Pistols' => ['All', 'Glock-18', 'P2000', 'USP-S', 'P250', 'Five-SeveN', 'Tec-9', 'CZ75-Auto', 'Desert Eagle', 'Dual Berettas', 'R8 Revolver'],
-            'Shotguns' => ['All', 'Nova', 'XM1014', 'MAG-7', 'Sawed-Off'],
-            'Machine Guns' => ['All', 'M249', 'Negev'],
-            'Knives' => ['All'],
-            'Gloves' => ['All'],
+            'Rifles' => ['All', 'AK-47', 'M4A4', 'M4A1-S', 'Galil AR', 'FAMAS', 'SG 553', 'AUG', 'AWP', 'SSG 08', 'SCAR-20', 'G3SG1'],
+            'Melee' => ['All'],
         ];
     }
 
@@ -57,45 +55,101 @@ class StoreController extends Controller
             $weapon = 'All';
         }
 
-        $searchTerm = $search !== '' ? $search : ($weapon !== 'All' ? $weapon : null);
+        $usingSearch = $search !== '';
+        $searchTerm = $usingSearch ? $search : ($weapon !== 'All' ? $weapon : null);
         $cacheKey = 'store.skins.cs2.'.Str::slug($type).'.'.Str::slug($weapon).'.'.Str::slug($searchTerm ?? 'all').'.p'.$page.'.pp'.$perPage;
 
-        $skins = Cache::remember($cacheKey, now()->addMinutes(30), function () use ($type, $searchTerm, $page, $perPage) {
-            $response = Http::timeout(10)->get('https://kolzex.com/api/public/skins', [
-                'game' => 'cs2',
-                'type' => $type,
-                'search' => $searchTerm,
-                'wear' => 'Factory New',
-                'per_page' => $perPage,
-                'page' => $page,
-            ]);
-
-            if (! $response->ok()) {
-                return [];
-            }
-
-            $payload = $response->json();
-            $pageItems = $this->extractItems($payload);
+        $skins = Cache::remember($cacheKey, now()->addMinutes(30), function () use ($type, $weapon, $allowedWeapons, $searchTerm, $page, $perPage) {
             $items = [];
 
-            foreach ($pageItems as $item) {
-                $name = $this->extractName($item);
-                $image = $this->extractImage($item);
+            // If a specific weapon is selected or search term is present, use API search directly.
+            if ($searchTerm !== null) {
+                $response = Http::timeout(10)->get('https://kolzex.com/api/public/skins', [
+                    'game' => 'cs2',
+                    'search' => $searchTerm,
+                    'wear' => 'Factory New',
+                    'per_page' => $perPage,
+                    'page' => $page,
+                ]);
 
-                if (! $name || ! $image) {
-                    continue;
+                if (! $response->ok()) {
+                    return [];
                 }
 
-                $items[] = [
-                    'name' => $name,
-                    'image' => $image,
-                ];
+                $payload = $response->json();
+                $pageItems = $this->extractItems($payload);
+                $items = $this->mapItems($pageItems);
+
+                return collect($items)
+                    ->unique('name')
+                    ->values()
+                    ->all();
             }
 
-            return collect($items)
-                ->unique('name')
-                ->values()
-                ->all();
+            // If type is All or Melee, just return API list without type filtering.
+            if ($type === 'All' || $type === 'Melee') {
+                $response = Http::timeout(10)->get('https://kolzex.com/api/public/skins', [
+                    'game' => 'cs2',
+                    'wear' => 'Factory New',
+                    'per_page' => $perPage,
+                    'page' => $page,
+                ]);
+
+                if (! $response->ok()) {
+                    return [];
+                }
+
+                $payload = $response->json();
+                $pageItems = $this->extractItems($payload);
+                $items = $this->mapItems($pageItems);
+
+                return collect($items)
+                    ->unique('name')
+                    ->values()
+                    ->all();
+            }
+
+            // For grouped types, fetch more pages and filter by weapon list locally.
+            $weaponList = array_values(array_filter($allowedWeapons, fn ($w) => $w !== 'All'));
+            $maxPages = 8;
+
+            for ($remotePage = 1; $remotePage <= $maxPages; $remotePage++) {
+                $response = Http::timeout(10)->get('https://kolzex.com/api/public/skins', [
+                    'game' => 'cs2',
+                    'wear' => 'Factory New',
+                    'per_page' => 60,
+                    'page' => $remotePage,
+                ]);
+
+                if (! $response->ok()) {
+                    break;
+                }
+
+                $payload = $response->json();
+                $pageItems = $this->extractItems($payload);
+
+                if (empty($pageItems)) {
+                    break;
+                }
+
+                foreach ($this->mapItems($pageItems) as $item) {
+                    foreach ($weaponList as $weaponName) {
+                        if (Str::contains($item['name'], $weaponName)) {
+                            $items[] = $item;
+                            break;
+                        }
+                    }
+                }
+
+                if (count($items) >= ($page * $perPage)) {
+                    break;
+                }
+            }
+
+            $unique = collect($items)->unique('name')->values();
+            $offset = ($page - 1) * $perPage;
+
+            return $unique->slice($offset, $perPage)->values()->all();
         });
 
         return response()->json([
@@ -106,8 +160,34 @@ class StoreController extends Controller
                 'per_page' => $perPage,
                 'count' => count($skins),
                 'has_more' => count($skins) >= $perPage,
+                'search_active' => $usingSearch,
             ],
         ]);
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $pageItems
+     * @return array<int, array{name: string, image: string}>
+     */
+    private function mapItems(array $pageItems): array
+    {
+        $items = [];
+
+        foreach ($pageItems as $item) {
+            $name = $this->extractName($item);
+            $image = $this->extractImage($item);
+
+            if (! $name || ! $image) {
+                continue;
+            }
+
+            $items[] = [
+                'name' => $name,
+                'image' => $image,
+            ];
+        }
+
+        return $items;
     }
 
     /**

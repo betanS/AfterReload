@@ -6,9 +6,9 @@
 <div class="max-w-6xl mx-auto p-8">
     <div class="rounded-xl border border-slate-800 bg-slate-900/80 p-6">
         <h2 class="text-2xl font-black mb-2">Tienda</h2>
-        <p class="text-sm text-slate-300">Selecciona el tipo de arma, luego el arma exacta, y explora todas sus skins.</p>
+        <p class="text-sm text-slate-300">Usa los filtros para explorar categorias, o busca cualquier skin con el buscador.</p>
 
-        <div class="mt-6 grid gap-4 md:grid-cols-4">
+        <div class="mt-6 grid gap-4 md:grid-cols-3">
             <div>
                 <label class="text-xs uppercase tracking-widest text-blue-300">Tipo de arma</label>
                 <select id="type-select" class="mt-2 w-full rounded-md border border-slate-800 bg-slate-950/70 p-3 text-sm text-slate-100">
@@ -21,10 +21,6 @@
                 <label class="text-xs uppercase tracking-widest text-blue-300">Arma</label>
                 <select id="weapon-select" class="mt-2 w-full rounded-md border border-slate-800 bg-slate-950/70 p-3 text-sm text-slate-100"></select>
             </div>
-            <div>
-                <label class="text-xs uppercase tracking-widest text-blue-300">Buscar skin</label>
-                <input id="search-input" type="text" placeholder="Ej: Dragon Lore" class="mt-2 w-full rounded-md border border-slate-800 bg-slate-950/70 p-3 text-sm text-slate-100">
-            </div>
             <div class="flex items-end">
                 <button id="load-skins" class="w-full rounded-md bg-blue-600 py-3 text-sm font-bold uppercase tracking-wide text-white hover:bg-blue-500">
                     Ver skins
@@ -32,8 +28,21 @@
             </div>
         </div>
 
+        <div class="mt-6 flex flex-wrap items-end gap-4">
+            <div class="flex-1 min-w-[240px]">
+                <label class="text-xs uppercase tracking-widest text-blue-300">Buscar skin</label>
+                <input id="search-input" type="text" placeholder="Ej: Dragon Lore" class="mt-2 w-full rounded-md border border-slate-800 bg-slate-950/70 p-3 text-sm text-slate-100">
+            </div>
+            <button id="search-skins" class="rounded-md border border-blue-500 px-6 py-3 text-sm font-bold uppercase tracking-wide text-blue-200 hover:bg-blue-500/10">
+                Buscar
+            </button>
+            <button id="clear-search" class="rounded-md border border-slate-800 px-6 py-3 text-sm font-semibold text-slate-200 hover:border-slate-700">
+                Limpiar
+            </button>
+        </div>
+
         <div class="mt-6 flex items-center justify-between text-sm text-slate-400">
-            <span id="status">Selecciona filtros y carga las skins.</span>
+            <span id="status">Selecciona filtros o busca una skin.</span>
             <div class="flex items-center gap-2">
                 <button id="prev-page" class="rounded-md border border-slate-800 px-3 py-2 text-xs font-semibold text-slate-200 hover:border-slate-700" disabled>
                     Anterior
@@ -71,6 +80,8 @@
     const weaponSelect = document.getElementById('weapon-select');
     const searchInput = document.getElementById('search-input');
     const loadButton = document.getElementById('load-skins');
+    const searchButton = document.getElementById('search-skins');
+    const clearButton = document.getElementById('clear-search');
     const grid = document.getElementById('skins-grid');
     const status = document.getElementById('status');
     const prevPage = document.getElementById('prev-page');
@@ -167,6 +178,17 @@
     confirmBuy.addEventListener('click', closeModalHandler);
 
     loadButton.addEventListener('click', () => {
+        currentPage = 1;
+        loadSkins();
+    });
+
+    searchButton.addEventListener('click', () => {
+        currentPage = 1;
+        loadSkins();
+    });
+
+    clearButton.addEventListener('click', () => {
+        searchInput.value = '';
         currentPage = 1;
         loadSkins();
     });
