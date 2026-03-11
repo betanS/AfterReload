@@ -2,8 +2,8 @@
     <div class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
         <div class="flex items-center gap-4">
             <div>
-                <p class="text-xs uppercase tracking-[0.2em] text-blue-400">CS:GO Platform</p>
-                <h1 class="text-lg font-black text-white">Matchmaking Competitivo</h1>
+                <p class="text-xs uppercase tracking-[0.2em] text-blue-400">AfterReload</p>
+                <h1 class="text-lg font-black text-white">CSGO Matchmaking</h1>
             </div>
 
             @auth
@@ -37,7 +37,7 @@
                         <summary class="flex cursor-pointer list-none items-center gap-3 rounded-full border border-slate-800 bg-slate-900 px-3 py-2 text-sm font-semibold text-slate-100 hover:border-slate-700">
                             <img src="{{ auth()->user()->avatar }}" class="h-7 w-7 rounded-full border border-blue-500/60" alt="Avatar Steam">
                             <span>{{ auth()->user()->steam_nickname ?? auth()->user()->name }}</span>
-                            <span class="text-blue-400 transition group-open:rotate-180">?</span>
+                            <span class="text-blue-400 transition group-open:rotate-180">v</span>
                         </summary>
                         <div class="absolute right-0 mt-2 w-48 rounded-lg border border-slate-800 bg-slate-950/95 p-2 shadow-xl">
                             <a href="{{ route('profile') }}" class="block rounded-md px-3 py-2 text-sm text-slate-200 hover:bg-slate-800">Perfil</a>

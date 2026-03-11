@@ -15,6 +15,10 @@ Route::get('/login', fn () => redirect()->route('login.steam'))->name('login');
 Route::get('/login/steam', [SteamController::class, 'redirectToSteam'])->name('login.steam');
 Route::get('/login/steam/callback', [SteamController::class, 'handleSteamCallback'])->name('login.steam.callback');
 
+Route::get('/contact', function () {
+    return view('contact');
+})->name('contact');
+
 Route::middleware('auth')->group(function () {
     Route::get('/home', function () {
         $user = request()->user();

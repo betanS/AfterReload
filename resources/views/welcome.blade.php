@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>CS:GO Matchmaking</title>
+    <title>AfterReload</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=space-grotesk:400,500,600,700" rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com"></script>
@@ -20,8 +20,8 @@
     <header class="border-b border-slate-800/80 bg-slate-900/70 backdrop-blur">
         <div class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
             <div>
-                <p class="text-xs uppercase tracking-[0.2em] text-blue-400">CS:GO Platform</p>
-                <h1 class="text-lg font-black text-white">Matchmaking Competitivo</h1>
+                <p class="text-xs uppercase tracking-[0.2em] text-blue-400">AfterReload</p>
+                <h1 class="text-lg font-black text-white">CSGO Matchmaking</h1>
             </div>
 
             @auth

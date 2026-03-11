@@ -5,8 +5,12 @@
 @section('content')
 <div class="max-w-6xl mx-auto p-8">
     <div class="rounded-xl border border-slate-800 bg-slate-900/80 p-6">
-        <h2 class="text-2xl font-black mb-2">Tienda</h2>
-        <p class="text-sm text-slate-300">Usa los filtros para explorar categorias, o busca cualquier skin con el buscador.</p>
+        <div class="flex flex-wrap items-start justify-between gap-4">
+            <div>
+                <h2 class="text-2xl font-black mb-2">Tienda</h2>
+                <p class="text-sm text-slate-300">Usa los filtros para explorar categorias, o busca cualquier skin con el buscador.</p>
+            </div>
+        </div>
 
         <div class="mt-6 grid gap-4 md:grid-cols-3">
             <div>
@@ -155,7 +159,7 @@
             renderCards(data.data);
             updatePagination();
         } catch (error) {
-            status.textContent = 'Error al conectar con la API.';
+            status.textContent = 'Error al conectar con el catalogo local.';
         }
     };
 
