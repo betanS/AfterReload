@@ -1,9 +1,8 @@
 <nav class="bg-slate-950/90 border-b border-slate-800">
     <div class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
         <div class="flex items-center gap-4">
-            <div>
-                <p class="text-xs uppercase tracking-[0.2em] text-blue-400">AfterReload</p>
-                <h1 class="text-lg font-black text-white">CSGO Matchmaking</h1>
+            <div class="flex items-center">
+                <img src="{{ asset('branding/FullLogoNavBar.png') }}" alt="AfterReload" class="h-10 w-auto">
             </div>
 
             @auth
