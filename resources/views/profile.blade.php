@@ -11,7 +11,7 @@
             <div>
                 <p class="text-lg font-semibold">{{ auth()->user()->steam_nickname ?? auth()->user()->name }}</p>
                 <p class="text-sm text-slate-400">Cuenta Steam conectada</p>
-                <p class="mt-1 text-[10px] uppercase tracking-[0.2em] text-slate-500">Rol: {{ auth()->user()->role }}</p>
+                <p class="mt-1 text-[10px] uppercase tracking-[0.2em] text-slate-500">Rol: <span class="{{ auth()->user()->isAdmin() ? 'text-red-400' : '' }}">{{ auth()->user()->role }}</span></p>
             </div>
         </div>
         <div class="mt-6 grid gap-3 sm:grid-cols-2">
