@@ -85,5 +85,6 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/lobby/{server}', [LobbyController::class, 'show'])->name('lobby.show');
     Route::get('/lobby/{server}/status', [LobbyController::class, 'status'])->name('lobby.status');
+    Route::post('/lobby/{server}/leave', [LobbyController::class, 'leave'])->name('lobby.leave');
     Route::post('/logout', [SteamController::class, 'logout'])->name('logout');
 });
