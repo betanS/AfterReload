@@ -11,6 +11,17 @@ use Illuminate\Support\Str;
 
 class StoreController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware(function ($request, $next) {
+            if (! $request->user() || ! $request->user()->canAccessStore()) {
+                abort(403);
+            }
+
+            return $next($request);
+        });
+    }
+
     /**
      * @return array<string, array<int, string>>
      */

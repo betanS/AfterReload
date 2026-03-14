@@ -11,9 +11,14 @@
                     <a href="{{ route('home') }}" class="rounded-md border border-slate-800 px-4 py-2 text-sm font-semibold text-slate-100 hover:border-slate-700">
                         Home
                     </a>
-                    <a href="{{ route('store') }}" class="rounded-md border border-slate-800 px-4 py-2 text-sm font-semibold text-slate-100 hover:border-slate-700">
-                        Tienda
-                    </a>
+                    @if(auth()->user()->isAdmin())
+                        <a href="{{ route('store') }}" class="rounded-md border border-slate-800 px-4 py-2 text-sm font-semibold text-slate-100 hover:border-slate-700">
+                            Tienda
+                        </a>
+                        <a href="{{ route('admin.index') }}" class="rounded-md border border-slate-800 px-4 py-2 text-sm font-semibold text-blue-300 hover:border-slate-700">
+                            Admin
+                        </a>
+                    @endif
                 </div>
             @endauth
         </div>
@@ -35,7 +40,7 @@
                 <div class="relative">
                     <details class="group">
                         <summary class="flex cursor-pointer list-none items-center gap-3 rounded-full border border-slate-800 bg-slate-900 px-3 py-2 text-sm font-semibold text-slate-100 hover:border-slate-700">
-                            <img src="{{ auth()->user()->avatar }}" class="h-7 w-7 rounded-full border border-blue-500/60" alt="Avatar Steam">
+                            <img src="{{ auth()->user()->avatar }}" class="h-7 w-7 rounded-full border border-blue-500/60" alt="Avatar">
                             <span>{{ auth()->user()->steam_nickname ?? auth()->user()->name }}</span>
                             <span class="text-blue-400 transition group-open:rotate-180">v</span>
                         </summary>

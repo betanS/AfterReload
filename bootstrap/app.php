@@ -12,6 +12,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->redirectGuestsTo(fn () => route('welcome'));
+        $middleware->appendToGroup('web', \App\Http\Middleware\EnsureNotBanned::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

@@ -25,6 +25,8 @@ class User extends Authenticatable
         'steam_id',
         'steam_nickname',
         'steam_real_name',
+        'role',
+        'banned_at',
         'avatar',
         'rank_points',
         'blue_credits',
@@ -50,7 +52,23 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'banned_at' => 'datetime',
         ];
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    public function canAccessStore(): bool
+    {
+        return $this->isAdmin();
+    }
+
+    public function isBanned(): bool
+    {
+        return $this->banned_at !== null;
     }
 
     /**
