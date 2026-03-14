@@ -29,7 +29,7 @@
                                     <img src="{{ $player->avatar }}" alt="{{ $player->steam_nickname ?? $player->name }}" class="h-9 w-9 rounded-full border border-blue-500/60">
                                     <div>
                                         <p class="font-semibold">{{ $player->steam_nickname ?? $player->name }}</p>
-                                        <p class="text-xs text-slate-500">AfterReload</p>
+                                        <p class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ $player->role }}</p>
                                     </div>
                                 </div>
                             </td>
