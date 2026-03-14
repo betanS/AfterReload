@@ -1,4 +1,4 @@
-<nav class="bg-slate-950/90 border-b border-slate-800">
+<nav class="relative z-50 bg-slate-950/90 border-b border-slate-800">
     <div class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
         <div class="flex items-center gap-4">
             <a href="{{ route('welcome') }}" class="flex items-center gap-3">
@@ -54,7 +54,7 @@
                             <span>{{ auth()->user()->steam_nickname ?? auth()->user()->name }}</span>
                             <span class="text-blue-400 transition group-open:rotate-180">v</span>
                         </summary>
-                        <div class="absolute right-0 mt-2 w-52 rounded-lg border border-slate-800 bg-slate-950/95 p-2 shadow-xl">
+                        <div class="absolute right-0 mt-2 w-52 rounded-lg border border-slate-800 bg-slate-950/95 p-2 shadow-xl z-50">
                             <div class="px-3 pb-2 text-[10px] uppercase tracking-[0.2em] text-slate-500">Rol: {{ auth()->user()->role }}</div>
                             <a href="{{ route('profile') }}" class="block rounded-md px-3 py-2 text-sm text-slate-200 hover:bg-slate-800">Perfil</a>
                             <a href="{{ route('inventory') }}" class="block rounded-md px-3 py-2 text-sm text-slate-200 hover:bg-slate-800">Inventario</a>
