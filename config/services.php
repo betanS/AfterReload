@@ -38,7 +38,7 @@ return [
     'steam' => [
         'client_id' => env('STEAM_CLIENT_ID', null),
         'client_secret' => env('STEAM_CLIENT_SECRET'),
-        'redirect' => env('STEAM_REDIRECT_URI'),
+        'redirect' => env('STEAM_REDIRECT_URL'),
         'allowed_hosts' => array_filter(array_map('trim', explode(',', (string) env('STEAM_ALLOWED_HOSTS', '')))),
     ],
 
