@@ -6,8 +6,8 @@
 <div class="app-root min-h-screen bg-slate-950 text-slate-100 p-6 md:p-8">
     <div class="mx-auto max-w-6xl">
         <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
-            <a href="{{ route('home') }}" class="inline-flex items-center rounded-md border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-200 hover:border-slate-500">
-                Volver al Home
+            <a href="{{ route('servers.index') }}" class="inline-flex items-center rounded-md border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-200 hover:border-slate-500">
+                Volver a servidores
             </a>
             <span class="rounded-md bg-slate-900 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-blue-300 border border-slate-800">
                 Lobby #<span id="lobby-id">{{ $lobby->id }}</span>

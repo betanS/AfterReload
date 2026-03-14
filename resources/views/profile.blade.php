@@ -7,10 +7,11 @@
     <div class="rounded-xl border border-slate-800 bg-slate-900/80 p-6">
         <h2 class="text-2xl font-black mb-4">Perfil</h2>
         <div class="flex items-center gap-4">
-            <img src="{{ auth()->user()->avatar }}" class="h-16 w-16 rounded-full border border-blue-500/60" alt="Avatar Steam">
+            <img src="{{ auth()->user()->avatar }}" class="h-16 w-16 rounded-full border border-blue-500/60" alt="Avatar">
             <div>
                 <p class="text-lg font-semibold">{{ auth()->user()->steam_nickname ?? auth()->user()->name }}</p>
                 <p class="text-sm text-slate-400">Cuenta Steam conectada</p>
+                <p class="mt-1 text-[10px] uppercase tracking-[0.2em] text-slate-500">Rol: {{ auth()->user()->role }}</p>
             </div>
         </div>
         <div class="mt-6 grid gap-3 sm:grid-cols-2">

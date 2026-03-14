@@ -6,6 +6,7 @@ use App\Http\Controllers\Lobby\LobbyController;
 use App\Http\Controllers\Store\StoreController;
 use App\Models\Lobby;
 use App\Models\Server;
+use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -25,7 +26,13 @@ Route::middleware('auth')->group(function () {
         return view('banned');
     })->name('banned');
 
-    Route::get('/home', function () {
+    Route::get('/home', fn () => redirect()->route('welcome'))->name('home');
+
+    Route::get('/servers', function () {
+        return view('home');
+    })->name('servers.index');
+
+    Route::get('/servers/data', function () {
         $user = request()->user();
 
         $activeLobbies = $user->lobbies()
@@ -49,7 +56,6 @@ Route::middleware('auth')->group(function () {
             ]);
         }
 
-        // Keep counters in sync for all servers shown in home.
         $servers = Server::all();
 
         foreach ($servers as $server) {
@@ -70,12 +76,24 @@ Route::middleware('auth')->group(function () {
         $servers = Server::all()->map(function ($server) {
             $server->runtime_status = $server->isOnline() ? 'online' : 'offline';
             return $server;
-        });
+        })->values();
 
-        return view('home', [
+        return response()->json([
             'servers' => $servers,
         ]);
-    })->name('home');
+    })->name('servers.data');
+
+    Route::get('/ranking', function () {
+        $players = User::query()
+            ->whereNotNull('steam_id')
+            ->orderByDesc('rank_points')
+            ->take(50)
+            ->get();
+
+        return view('ranking', [
+            'players' => $players,
+        ]);
+    })->name('ranking');
 
     Route::get('/profile', function () {
         return view('profile');
