@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Auth\SteamController;
 use App\Http\Controllers\Lobby\LobbyController;
 use App\Http\Controllers\Store\StoreController;
@@ -20,6 +21,10 @@ Route::get('/contact', function () {
 })->name('contact');
 
 Route::middleware('auth')->group(function () {
+    Route::get('/banned', function () {
+        return view('banned');
+    })->name('banned');
+
     Route::get('/home', function () {
         $user = request()->user();
 
@@ -86,5 +91,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/lobby/{server}', [LobbyController::class, 'show'])->name('lobby.show');
     Route::get('/lobby/{server}/status', [LobbyController::class, 'status'])->name('lobby.status');
     Route::post('/lobby/{server}/leave', [LobbyController::class, 'leave'])->name('lobby.leave');
+
+    Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
+    Route::post('/admin/users/{user}/role', [AdminController::class, 'updateRole'])->name('admin.users.role');
+    Route::post('/admin/users/{user}/ban', [AdminController::class, 'toggleBan'])->name('admin.users.ban');
+
     Route::post('/logout', [SteamController::class, 'logout'])->name('logout');
 });
