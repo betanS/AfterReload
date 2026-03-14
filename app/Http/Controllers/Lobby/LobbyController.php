@@ -70,8 +70,8 @@ class LobbyController extends Controller
 
         $lobby = $server->lobbies()
             ->whereIn('status', ['waiting', 'live'])
-            ->withCount('users')
-            ->havingRaw('users_count < required_players')
+	    ->withCount('users')
+            ->whereRaw('(select count(*) from lobby_user where lobby_user.lobby_id = lobbies.id) < lobbies.required_players')
             ->orderByRaw("case when status = 'waiting' then 0 else 1 end")
             ->latest('id')
             ->first();
