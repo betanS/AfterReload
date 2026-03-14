@@ -6,7 +6,8 @@
     <title>@yield('title', 'AfterReload')</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=space-grotesk:400,500,600,700" rel="stylesheet" />
-    <link rel="icon" href="{{ asset('branding/minilogoNoBG.png') }}" type="image/png">
+    <link rel="icon" href="{{ asset('branding/minilogoNoBG.png') }}" type="image/png" sizes="32x32">
+    <link rel="icon" href="{{ asset('branding/minilogoNoBG.png') }}" type="image/png" sizes="16x16">
     <link rel="apple-touch-icon" href="{{ asset('branding/minilogoWithBg.png') }}">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>

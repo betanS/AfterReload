@@ -1,20 +1,31 @@
 <nav class="bg-slate-950/90 border-b border-slate-800">
     <div class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
         <div class="flex items-center gap-4">
-            <div class="flex items-center">
-                <img src="{{ asset('branding/FullLogoNavBar.png') }}" alt="AfterReload" class="h-10 w-auto">
-            </div>
+            <a href="{{ route('welcome') }}" class="flex items-center gap-3">
+                <img src="{{ asset('branding/minilogoWithBg.png') }}" alt="AfterReload" class="h-10 w-10 rounded-lg">
+                <div class="leading-tight">
+                    <p class="text-sm uppercase tracking-[0.2em] text-blue-300">AfterReload</p>
+                    <h1 class="text-xl font-black text-white">CSGO Matchmaking</h1>
+                </div>
+            </a>
 
             @auth
                 <div class="flex items-center gap-3">
-                    <a href="{{ route('home') }}" class="rounded-md border border-slate-800 px-4 py-2 text-sm font-semibold text-slate-100 hover:border-slate-700">
-                        Home
+                    <a href="{{ route('servers.index') }}" class="inline-flex items-center gap-2 rounded-md border border-slate-800 px-4 py-2 text-base font-semibold text-slate-100 hover:border-slate-700">
+                        <img src="{{ asset('icons/home.svg') }}" alt="Home" class="h-4 w-4">
+                        Servidores
+                    </a>
+                    <a href="{{ route('ranking') }}" class="inline-flex items-center gap-2 rounded-md border border-slate-800 px-4 py-2 text-base font-semibold text-slate-100 hover:border-slate-700">
+                        <img src="{{ asset('icons/ranking.svg') }}" alt="Ranking" class="h-4 w-4">
+                        Ranking
                     </a>
                     @if(auth()->user()->isAdmin())
-                        <a href="{{ route('store') }}" class="rounded-md border border-slate-800 px-4 py-2 text-sm font-semibold text-slate-100 hover:border-slate-700">
+                        <a href="{{ route('store') }}" class="inline-flex items-center gap-2 rounded-md border border-slate-800 px-4 py-2 text-base font-semibold text-slate-100 hover:border-slate-700">
+                            <img src="{{ asset('icons/store.svg') }}" alt="Tienda" class="h-4 w-4">
                             Tienda
                         </a>
-                        <a href="{{ route('admin.index') }}" class="rounded-md border border-slate-800 px-4 py-2 text-sm font-semibold text-blue-300 hover:border-slate-700">
+                        <a href="{{ route('admin.index') }}" class="inline-flex items-center gap-2 rounded-md border border-slate-800 px-4 py-2 text-base font-semibold text-blue-300 hover:border-slate-700">
+                            <img src="{{ asset('icons/admin.svg') }}" alt="Admin" class="h-4 w-4">
                             Admin
                         </a>
                     @endif
@@ -43,7 +54,8 @@
                             <span>{{ auth()->user()->steam_nickname ?? auth()->user()->name }}</span>
                             <span class="text-blue-400 transition group-open:rotate-180">v</span>
                         </summary>
-                        <div class="absolute right-0 mt-2 w-48 rounded-lg border border-slate-800 bg-slate-950/95 p-2 shadow-xl">
+                        <div class="absolute right-0 mt-2 w-52 rounded-lg border border-slate-800 bg-slate-950/95 p-2 shadow-xl">
+                            <div class="px-3 pb-2 text-[10px] uppercase tracking-[0.2em] text-slate-500">Rol: {{ auth()->user()->role }}</div>
                             <a href="{{ route('profile') }}" class="block rounded-md px-3 py-2 text-sm text-slate-200 hover:bg-slate-800">Perfil</a>
                             <a href="{{ route('inventory') }}" class="block rounded-md px-3 py-2 text-sm text-slate-200 hover:bg-slate-800">Inventario</a>
                             <form method="POST" action="{{ route('logout') }}" class="mt-1">
@@ -54,7 +66,7 @@
                     </details>
                 </div>
             @else
-                <a href="{{ route('login.steam') }}" class="rounded-md bg-blue-600 px-5 py-2 text-sm font-bold uppercase tracking-wide text-white transition hover:bg-blue-500">
+                <a href="{{ route('login.steam') }}" class="rounded-md bg-blue-600 px-5 py-2 text-base font-bold uppercase tracking-wide text-white transition hover:bg-blue-500">
                     Iniciar con Steam
                 </a>
             @endauth
