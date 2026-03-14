@@ -27,9 +27,9 @@
                 <div id="players-grid" class="mt-6 grid gap-3 sm:grid-cols-2">
                     @foreach($lobby->users as $player)
                         <div class="flex items-center gap-3 rounded-lg border border-slate-800 bg-slate-950/70 px-4 py-3">
-                            <img src="{{ $player->avatar }}" alt="Avatar {{ $player->name }}" class="h-10 w-10 rounded-full border border-blue-500/60">
+                            <img src="{{ $player->avatar }}" alt="Avatar {{ $player->steam_nickname ?? $player->name }}" class="h-10 w-10 rounded-full border border-blue-500/60">
                             <div>
-                                <p class="font-semibold">{{ $player->name }}</p>
+                                <p class="font-semibold">{{ $player->steam_nickname ?? $player->name }}</p>
                                 <p class="text-xs text-slate-400">Rango: {{ $player->rank_points }}</p>
                             </div>
                         </div>
@@ -67,7 +67,7 @@
                     </div>
 
                     <p class="mt-4 text-xs text-slate-500">
-                        Actualizando lobby automaticamente cada 5 segundos.
+                        Actualizando lobby en tiempo real.
                     </p>
                 </div>
             </aside>
@@ -75,9 +75,20 @@
     </div>
 </div>
 
+<script src="https://js.pusher.com/8.4.0/pusher.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.15.3/dist/echo.iife.js"></script>
 <script>
 (() => {
     const statusUrl = @json(route('lobby.status', $server));
+    const leaveUrl = @json(route('lobby.leave', $server));
+    const csrfToken = @json(csrf_token());
+    const serverId = @json($server->id);
+    const pusherKey = @json(config('broadcasting.connections.pusher.key'));
+    const pusherCluster = @json(config('broadcasting.connections.pusher.options.cluster'));
+    const pusherHost = @json(config('broadcasting.connections.pusher.options.host'));
+    const pusherPort = @json(config('broadcasting.connections.pusher.options.port'));
+    const pusherScheme = @json(config('broadcasting.connections.pusher.options.scheme'));
+
     const playersCount = document.getElementById('players-count');
     const requiredPlayers = document.getElementById('required-players');
     const missingPlayers = document.getElementById('missing-players');
@@ -88,6 +99,7 @@
     const connectCommand = document.getElementById('connect-command');
     const joinMatchLink = document.getElementById('join-match-link');
     const playersGrid = document.getElementById('players-grid');
+    let hasLeft = false;
 
     const escapeHtml = (value) => {
         return String(value)
@@ -116,6 +128,28 @@
         }).join('');
     };
 
+    const applyPayload = (data) => {
+        playersCount.textContent = data.lobby.users_count;
+        requiredPlayers.textContent = data.lobby.required_players;
+        missingPlayers.textContent = data.lobby.missing_players;
+        lobbyStatus.textContent = String(data.lobby.status).toUpperCase();
+
+        const address = `${data.server.ip}:${data.server.port}`;
+        serverAddress.textContent = address;
+        connectCommand.textContent = `connect ${address}`;
+        joinMatchLink.setAttribute('href', `steam://connect/${address}`);
+
+        renderPlayers(data.users);
+
+        if (data.is_ready) {
+            readyPanel.classList.remove('hidden');
+            waitingPanel.classList.add('hidden');
+        } else {
+            readyPanel.classList.add('hidden');
+            waitingPanel.classList.remove('hidden');
+        }
+    };
+
     const updateLobby = async () => {
         try {
             const response = await fetch(statusUrl, {
@@ -132,32 +166,74 @@
             }
 
             const data = await response.json();
-
-            playersCount.textContent = data.lobby.users_count;
-            requiredPlayers.textContent = data.lobby.required_players;
-            missingPlayers.textContent = data.lobby.missing_players;
-            lobbyStatus.textContent = String(data.lobby.status).toUpperCase();
-
-            const address = `${data.server.ip}:${data.server.port}`;
-            serverAddress.textContent = address;
-            connectCommand.textContent = `connect ${address}`;
-            joinMatchLink.setAttribute('href', `steam://connect/${address}`);
-
-            renderPlayers(data.users);
-
-            if (data.is_ready) {
-                readyPanel.classList.remove('hidden');
-                waitingPanel.classList.add('hidden');
-            } else {
-                readyPanel.classList.add('hidden');
-                waitingPanel.classList.remove('hidden');
-            }
+            applyPayload(data);
         } catch (error) {
             // Ignorar errores transitorios de red durante el polling.
         }
     };
 
-    setInterval(updateLobby, 5000);
+    const initEcho = () => {
+        if (!pusherKey || typeof Pusher === 'undefined' || typeof Echo === 'undefined') {
+            return false;
+        }
+
+        const options = {
+            broadcaster: 'pusher',
+            key: pusherKey,
+            cluster: pusherCluster || undefined,
+            forceTLS: pusherScheme === 'https',
+            wsHost: pusherHost || undefined,
+            wsPort: pusherPort || undefined,
+            wssPort: pusherPort || undefined,
+            enabledTransports: ['ws', 'wss'],
+        };
+
+        window.Echo = new Echo(options);
+        window.Echo.channel(`lobby.${serverId}`)
+            .listen('.LobbyUpdated', (data) => applyPayload(data));
+
+        return true;
+    };
+
+    const sendLeave = () => {
+        if (hasLeft) {
+            return;
+        }
+
+        hasLeft = true;
+
+        const formData = new FormData();
+        formData.append('_token', csrfToken);
+
+        const beaconSent = navigator.sendBeacon(leaveUrl, formData);
+
+        if (!beaconSent) {
+            fetch(leaveUrl, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: new URLSearchParams({ _token: csrfToken }),
+                keepalive: true,
+            }).catch(() => {});
+        }
+    };
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            sendLeave();
+        }
+    });
+
+    window.addEventListener('beforeunload', sendLeave);
+    window.addEventListener('pagehide', sendLeave);
+
+    const echoReady = initEcho();
+
+    if (!echoReady) {
+        setInterval(updateLobby, 1000);
+    }
 })();
 </script>
 @endsection
