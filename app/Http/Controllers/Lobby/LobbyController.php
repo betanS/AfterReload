@@ -69,8 +69,8 @@ class LobbyController extends Controller
         $lobby = $lobby->fresh()->load('users:id,name,steam_nickname,avatar,rank_points')->loadCount('users');
         $server = $server->fresh();
 
-        $isReady = $lobby->users_count >= 1;
-        $missingPlayers = max(0, 1 - $lobby->users_count);
+        $isReady = $lobby->users_count >= 2;
+        $missingPlayers = max(0, 2 - $lobby->users_count);
 
         $this->broadcastLobby($server, $lobby, $isReady, $missingPlayers);
 
@@ -83,7 +83,7 @@ class LobbyController extends Controller
     private function resolveLobbyState(Server $server, int $userId): array
     {
         $displayRequiredPlayers = min($server->max_players, 10);
-        $revealThreshold = 1;
+        $revealThreshold = 2;
         $shouldBroadcast = false;
 
         $lobby = $server->lobbies()
