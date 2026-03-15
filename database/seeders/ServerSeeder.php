@@ -12,59 +12,33 @@ class ServerSeeder extends Seeder
      */
     public function run(): void
     {
-        Server::updateOrCreate(
-            ['name' => 'Public Lobby #1'],
-            [
-                'ip' => '185.47.131.129',
-                'port' => 27015,
-                'type' => 'public',
-                'max_players' => 10,
-                'current_players' => 0,
-            ]
-        );
+        Server::query()->delete();
 
-        Server::updateOrCreate(
-            ['name' => 'Public Lobby #2'],
-            [
-                'ip' => '203.0.113.77',
-                'port' => 27015,
-                'type' => 'public',
-                'max_players' => 10,
-                'current_players' => 0,
-            ]
-        );
+        Server::create([
+            'name' => 'Public Lobby #1',
+            'ip' => '185.47.131.129',
+            'port' => 27015,
+            'type' => 'public',
+            'max_players' => 10,
+            'current_players' => 0,
+        ]);
 
-        Server::updateOrCreate(
-            ['name' => 'Public Lobby #3'],
-            [
-                'ip' => '203.0.113.88',
-                'port' => 27015,
-                'type' => 'public',
-                'max_players' => 10,
-                'current_players' => 0,
-            ]
-        );
+        Server::create([
+            'name' => 'Public Lobby Wingman',
+            'ip' => '185.47.131.129',
+            'port' => 27016,
+            'type' => 'public',
+            'max_players' => 4,
+            'current_players' => 0,
+        ]);
 
-        Server::updateOrCreate(
-            ['name' => 'Wingman Europa #1'],
-            [
-                'ip' => '185.47.131.129',
-                'port' => 27016,
-                'type' => 'public',
-                'max_players' => 4,
-                'current_players' => 0,
-            ]
-        );
-
-        Server::updateOrCreate(
-            ['name' => 'AfterReload Matchmaking'],
-            [
-                'ip' => '185.47.131.129',
-                'port' => 27017,
-                'type' => 'mm',
-                'max_players' => 10,
-                'current_players' => 0,
-            ]
-        );
+        Server::create([
+            'name' => 'AfterReload Matchmaking',
+            'ip' => '185.47.131.129',
+            'port' => 27017,
+            'type' => 'mm',
+            'max_players' => 10,
+            'current_players' => 0,
+        ]);
     }
 }
