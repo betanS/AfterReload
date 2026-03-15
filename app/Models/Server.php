@@ -17,6 +17,7 @@ class Server extends Model
         'name',
         'ip',
         'port',
+        'type',
         'max_players',
         'current_players',
     ];
