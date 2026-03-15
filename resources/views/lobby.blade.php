@@ -3,6 +3,10 @@
 @section('title', 'Lobby')
 
 @section('content')
+@php
+    $ctPlayers = $lobby->users->filter(fn ($player) => $player->pivot?->team === 'ct');
+    $tPlayers = $lobby->users->filter(fn ($player) => $player->pivot?->team === 't');
+@endphp
 <div class="app-root min-h-screen bg-slate-950 text-slate-100 p-6 md:p-8">
     <div class="mx-auto max-w-6xl">
         <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
@@ -24,16 +28,48 @@
                     <span id="required-players">{{ $lobby->required_players }}</span>
                 </p>
 
-                <div id="players-grid" class="mt-6 grid gap-3 sm:grid-cols-2">
-                    @foreach($lobby->users as $player)
-                        <div class="flex items-center gap-3 rounded-lg border border-slate-800 bg-slate-950/70 px-4 py-3">
-                            <img src="{{ $player->avatar }}" alt="Avatar {{ $player->steam_nickname ?? $player->name }}" class="h-10 w-10 rounded-full border border-blue-500/60">
-                            <div>
-                                <p class="font-semibold">{{ $player->steam_nickname ?? $player->name }}</p>
-                                <p class="text-xs text-slate-400">Rango: {{ $player->rank_points }}</p>
-                            </div>
+                <div class="mt-6 grid gap-4 md:grid-cols-2">
+                    <div class="rounded-lg border border-blue-500/30 bg-slate-950/60 p-4">
+                        <div class="flex items-center justify-between">
+                            <h2 class="text-sm font-bold uppercase tracking-widest text-blue-300">CT</h2>
+                            <span class="text-xs text-slate-400"><span id="ct-count">{{ $ctCount }}</span>/<span id="team-size">{{ $teamSize }}</span></span>
                         </div>
-                    @endforeach
+                        <button id="join-ct" class="mt-3 w-full rounded-md border border-blue-500/40 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-blue-200 hover:border-blue-400">
+                            Unirse a CT
+                        </button>
+                        <div id="ct-list" class="mt-4 grid gap-3">
+                            @foreach($ctPlayers as $player)
+                                <div class="flex items-center gap-3 rounded-lg border border-slate-800 bg-slate-950/70 px-4 py-3">
+                                    <img src="{{ $player->avatar }}" alt="Avatar {{ $player->steam_nickname ?? $player->name }}" class="h-10 w-10 rounded-full border border-blue-500/60">
+                                    <div>
+                                        <p class="font-semibold">{{ $player->steam_nickname ?? $player->name }}</p>
+                                        <p class="text-xs text-slate-400">Rango: {{ $player->rank_points }}</p>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    <div class="rounded-lg border border-red-500/30 bg-slate-950/60 p-4">
+                        <div class="flex items-center justify-between">
+                            <h2 class="text-sm font-bold uppercase tracking-widest text-red-300">T</h2>
+                            <span class="text-xs text-slate-400"><span id="t-count">{{ $tCount }}</span>/<span id="team-size-alt">{{ $teamSize }}</span></span>
+                        </div>
+                        <button id="join-t" class="mt-3 w-full rounded-md border border-red-500/40 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-red-200 hover:border-red-400">
+                            Unirse a T
+                        </button>
+                        <div id="t-list" class="mt-4 grid gap-3">
+                            @foreach($tPlayers as $player)
+                                <div class="flex items-center gap-3 rounded-lg border border-slate-800 bg-slate-950/70 px-4 py-3">
+                                    <img src="{{ $player->avatar }}" alt="Avatar {{ $player->steam_nickname ?? $player->name }}" class="h-10 w-10 rounded-full border border-red-500/60">
+                                    <div>
+                                        <p class="font-semibold">{{ $player->steam_nickname ?? $player->name }}</p>
+                                        <p class="text-xs text-slate-400">Rango: {{ $player->rank_points }}</p>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
                 </div>
             </section>
 
@@ -81,6 +117,7 @@
 (() => {
     const statusUrl = @json(route('lobby.status', $server));
     const leaveUrl = @json(route('lobby.leave', $server));
+    const teamUrl = @json(route('lobby.team', $server));
     const csrfToken = @json(csrf_token());
     const serverId = @json($server->id);
     const pusherKey = @json(config('broadcasting.connections.pusher.key'));
@@ -98,7 +135,14 @@
     const serverAddress = document.getElementById('server-address');
     const connectCommand = document.getElementById('connect-command');
     const joinMatchLink = document.getElementById('join-match-link');
-    const playersGrid = document.getElementById('players-grid');
+    const ctList = document.getElementById('ct-list');
+    const tList = document.getElementById('t-list');
+    const ctCount = document.getElementById('ct-count');
+    const tCount = document.getElementById('t-count');
+    const teamSize = document.getElementById('team-size');
+    const teamSizeAlt = document.getElementById('team-size-alt');
+    const joinCt = document.getElementById('join-ct');
+    const joinT = document.getElementById('join-t');
     let hasLeft = false;
 
     const escapeHtml = (value) => {
@@ -110,15 +154,15 @@
             .replaceAll("'", '&#039;');
     };
 
-    const renderPlayers = (users) => {
-        playersGrid.innerHTML = users.map((user) => {
+    const renderTeam = (container, users, borderColor) => {
+        container.innerHTML = users.map((user) => {
             const name = escapeHtml(user.name ?? 'Steam User');
             const avatar = escapeHtml(user.avatar ?? 'https://placehold.co/40x40');
             const rank = escapeHtml(user.rank_points ?? 0);
 
             return `
                 <div class="flex items-center gap-3 rounded-lg border border-slate-800 bg-slate-950/70 px-4 py-3">
-                    <img src="${avatar}" alt="Avatar ${name}" class="h-10 w-10 rounded-full border border-blue-500/60">
+                    <img src="${avatar}" alt="Avatar ${name}" class="h-10 w-10 rounded-full border ${borderColor}">
                     <div>
                         <p class="font-semibold">${name}</p>
                         <p class="text-xs text-slate-400">Rango: ${rank}</p>
@@ -139,7 +183,33 @@
         connectCommand.textContent = `connect ${address}`;
         joinMatchLink.setAttribute('href', `steam://connect/${address}`);
 
-        renderPlayers(data.users);
+        const users = Array.isArray(data.users) ? data.users : [];
+        const ctUsers = users.filter((user) => user.team === 'ct');
+        const tUsers = users.filter((user) => user.team === 't');
+
+        renderTeam(ctList, ctUsers, 'border-blue-500/60');
+        renderTeam(tList, tUsers, 'border-red-500/60');
+
+        ctCount.textContent = data.lobby.ct_count ?? ctUsers.length;
+        tCount.textContent = data.lobby.t_count ?? tUsers.length;
+        teamSize.textContent = data.lobby.team_size ?? 5;
+        teamSizeAlt.textContent = data.lobby.team_size ?? 5;
+
+        const currentTeam = data.lobby.current_team;
+        const maxTeamSize = data.lobby.team_size ?? 5;
+        joinCt.disabled = (data.lobby.ct_count ?? 0) >= maxTeamSize;
+        joinT.disabled = (data.lobby.t_count ?? 0) >= maxTeamSize;
+
+        if (currentTeam === 'ct') {
+            joinCt.textContent = 'En CT';
+            joinT.textContent = 'Unirse a T';
+        } else if (currentTeam === 't') {
+            joinT.textContent = 'En T';
+            joinCt.textContent = 'Unirse a CT';
+        } else {
+            joinCt.textContent = 'Unirse a CT';
+            joinT.textContent = 'Unirse a T';
+        }
 
         if (data.is_ready) {
             readyPanel.classList.remove('hidden');
@@ -219,6 +289,31 @@
             }).catch(() => {});
         }
     };
+
+    const setTeam = async (team) => {
+        try {
+            const response = await fetch(teamUrl, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: new URLSearchParams({ team }),
+            });
+
+            if (!response.ok) {
+                return;
+            }
+
+            const data = await response.json();
+            applyPayload(data);
+        } catch (error) {
+            // ignore
+        }
+    };
+
+    joinCt.addEventListener('click', () => setTeam('ct'));
+    joinT.addEventListener('click', () => setTeam('t'));
 
     document.addEventListener('visibilitychange', () => {
         if (document.hidden) {

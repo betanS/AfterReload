@@ -20,11 +20,18 @@ class LobbyController extends Controller
 
         [$server, $lobby, $isReady, $missingPlayers] = $this->resolveLobbyState($server, Auth::id());
 
+        [$teamSize, $ctCount, $tCount] = $this->teamSnapshot($lobby, $server);
+        $currentTeam = $this->currentUserTeam($lobby, Auth::id());
+
         return view('lobby', [
             'server' => $server,
             'lobby' => $lobby,
             'isReady' => $isReady,
             'missingPlayers' => $missingPlayers,
+            'teamSize' => $teamSize,
+            'ctCount' => $ctCount,
+            'tCount' => $tCount,
+            'currentTeam' => $currentTeam,
         ]);
     }
 
@@ -77,6 +84,47 @@ class LobbyController extends Controller
         return response()->json(['left' => true]);
     }
 
+    public function setTeam(Server $server): JsonResponse
+    {
+        $userId = Auth::id();
+        $team = request()->string('team')->lower()->value();
+
+        if (! in_array($team, ['ct', 't'], true)) {
+            return response()->json(['message' => 'Equipo invalido'], 422);
+        }
+
+        $lobby = $server->lobbies()
+            ->whereIn('status', ['waiting', 'live'])
+            ->whereHas('users', fn ($query) => $query->where('users.id', $userId))
+            ->latest('id')
+            ->first();
+
+        if (! $lobby) {
+            return response()->json(['message' => 'Lobby no encontrado'], 404);
+        }
+
+        $teamSize = $this->teamSize($lobby, $server);
+        [$ctCount, $tCount] = $this->teamCounts($lobby);
+
+        if ($team === 'ct' && $ctCount >= $teamSize) {
+            return response()->json(['message' => 'Equipo lleno'], 409);
+        }
+        if ($team === 't' && $tCount >= $teamSize) {
+            return response()->json(['message' => 'Equipo lleno'], 409);
+        }
+
+        $lobby->users()->updateExistingPivot($userId, ['team' => $team]);
+
+        $lobby = $lobby->fresh()->load('users:id,name,steam_nickname,avatar,rank_points')->loadCount('users');
+        $server = $server->fresh();
+        $isReady = $lobby->users_count >= 2;
+        $missingPlayers = max(0, 2 - $lobby->users_count);
+
+        $this->broadcastLobby($server, $lobby, $isReady, $missingPlayers);
+
+        return response()->json($this->buildPayload($server, $lobby, $isReady, $missingPlayers));
+    }
+
     /**
      * @return array{Server, Lobby, bool, int}
      */
@@ -116,6 +164,11 @@ class LobbyController extends Controller
             $shouldBroadcast = true;
         }
 
+        $teamSize = $this->teamSize($lobby, $server);
+        if ($this->ensureTeam($lobby, $userId, $teamSize)) {
+            $shouldBroadcast = true;
+        }
+
         $lobby->loadCount('users');
         $playerCount = $lobby->users_count;
 
@@ -152,6 +205,9 @@ class LobbyController extends Controller
 
     private function buildPayload(Server $server, Lobby $lobby, bool $isReady, int $missingPlayers): array
     {
+        [$teamSize, $ctCount, $tCount] = $this->teamSnapshot($lobby, $server);
+        $currentTeam = $this->currentUserTeam($lobby, Auth::id());
+
         return [
             'server' => [
                 'id' => $server->id,
@@ -165,6 +221,10 @@ class LobbyController extends Controller
                 'required_players' => $lobby->required_players,
                 'users_count' => $lobby->users_count,
                 'missing_players' => $missingPlayers,
+                'team_size' => $teamSize,
+                'ct_count' => $ctCount,
+                't_count' => $tCount,
+                'current_team' => $currentTeam,
             ],
             'is_ready' => $isReady,
             'users' => $lobby->users->map(fn ($user) => [
@@ -172,6 +232,7 @@ class LobbyController extends Controller
                 'name' => $user->steam_nickname ?? $user->name,
                 'avatar' => $user->avatar,
                 'rank_points' => $user->rank_points,
+                'team' => $user->pivot?->team,
             ])->values(),
         ];
     }
@@ -190,5 +251,81 @@ class LobbyController extends Controller
                 'current_players' => $playersInActiveLobby,
             ]);
         }
+    }
+
+    private function teamSize(Lobby $lobby, Server $server): int
+    {
+        $required = $lobby->required_players ?: min($server->max_players, 10);
+        return max(1, intdiv($required, 2));
+    }
+
+    /**
+     * @return array{int, int}
+     */
+    private function teamCounts(Lobby $lobby): array
+    {
+        $ctCount = $lobby->users()->wherePivot('team', 'ct')->count();
+        $tCount = $lobby->users()->wherePivot('team', 't')->count();
+
+        return [$ctCount, $tCount];
+    }
+
+    /**
+     * @return array{int, int, int}
+     */
+    private function teamSnapshot(Lobby $lobby, Server $server): array
+    {
+        $teamSize = $this->teamSize($lobby, $server);
+        [$ctCount, $tCount] = $this->teamCounts($lobby);
+
+        return [$teamSize, $ctCount, $tCount];
+    }
+
+    private function currentUserTeam(Lobby $lobby, int $userId): ?string
+    {
+        $user = $lobby->users()->where('users.id', $userId)->first();
+
+        return $user?->pivot?->team;
+    }
+
+    private function ensureTeam(Lobby $lobby, int $userId, int $teamSize): bool
+    {
+        $user = $lobby->users()->where('users.id', $userId)->first();
+
+        if (! $user) {
+            return false;
+        }
+
+        $currentTeam = $user->pivot?->team;
+        if ($currentTeam) {
+            return false;
+        }
+
+        [$ctCount, $tCount] = $this->teamCounts($lobby);
+
+        $preferred = $ctCount <= $tCount ? 'ct' : 't';
+        $alternate = $preferred === 'ct' ? 't' : 'ct';
+
+        if ($preferred === 'ct' && $ctCount < $teamSize) {
+            $lobby->users()->updateExistingPivot($userId, ['team' => 'ct']);
+            return true;
+        }
+
+        if ($preferred === 't' && $tCount < $teamSize) {
+            $lobby->users()->updateExistingPivot($userId, ['team' => 't']);
+            return true;
+        }
+
+        if ($alternate === 'ct' && $ctCount < $teamSize) {
+            $lobby->users()->updateExistingPivot($userId, ['team' => 'ct']);
+            return true;
+        }
+
+        if ($alternate === 't' && $tCount < $teamSize) {
+            $lobby->users()->updateExistingPivot($userId, ['team' => 't']);
+            return true;
+        }
+
+        return false;
     }
 }
