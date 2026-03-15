@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Lobby;
+use App\Models\LobbyMatch;
 use App\Models\MatchResult;
+use App\Models\Server;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 
 class Get5Controller extends Controller
 {
@@ -72,6 +74,65 @@ class Get5Controller extends Controller
         $this->applyPoints($loserTeam, -8);
 
         return response()->json(['status' => 'processed']);
+    }
+
+    public function match(Lobby $lobby, Request $request): JsonResponse
+    {
+        $token = trim((string) env('GET5_WEBHOOK_TOKEN'));
+        $authHeader = (string) $request->header('Authorization');
+        $providedToken = str_starts_with($authHeader, 'Bearer ')
+            ? substr($authHeader, 7)
+            : (string) $request->header('X-Get5-Token');
+
+        if ($token !== '' && ! hash_equals($token, $providedToken)) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
+        $server = $lobby->server;
+        if (! $server) {
+            return response()->json(['message' => 'Server missing'], 404);
+        }
+
+        $existing = LobbyMatch::query()->where('lobby_id', $lobby->id)->first();
+        if ($existing) {
+            return response()->json($existing->config);
+        }
+
+        $lobby->load('users');
+        $users = $lobby->users->filter(fn ($user) => ! empty($user->steam_id));
+
+        $ctPlayers = $users->filter(fn ($user) => $user->pivot?->team === 'ct');
+        $tPlayers = $users->filter(fn ($user) => $user->pivot?->team === 't');
+
+        $matchId = sprintf('ar-%s-%s', $lobby->id, now()->format('YmdHis'));
+        $map = env('GET5_DEFAULT_MAP', 'de_mirage');
+        $playersPerTeam = max(1, intdiv($lobby->required_players ?: min($server->max_players, 10), 2));
+
+        $config = [
+            'matchid' => $matchId,
+            'players_per_team' => $playersPerTeam,
+            'min_players_to_ready' => 2,
+            'maplist' => [$map],
+            'team1' => [
+                'name' => 'AfterReload CT',
+                'players' => $ctPlayers->mapWithKeys(fn ($user) => [$user->steam_id => $user->steam_nickname ?? $user->name])->all(),
+            ],
+            'team2' => [
+                'name' => 'AfterReload T',
+                'players' => $tPlayers->mapWithKeys(fn ($user) => [$user->steam_id => $user->steam_nickname ?? $user->name])->all(),
+            ],
+        ];
+
+        LobbyMatch::query()->create([
+            'lobby_id' => $lobby->id,
+            'server_id' => $server->id,
+            'match_id' => $matchId,
+            'config' => $config,
+            'status' => 'pending',
+            'created_at' => now(),
+        ]);
+
+        return response()->json($config);
     }
 
     /**
