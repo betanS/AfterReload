@@ -22,3 +22,29 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+# --- AfterReload CSGO Ignore ---
+# Ignorar absolutamente todo lo que hay dentro de la carpeta del servidor
+csgoserver/**/*
+
+# Excepto las configuraciones y lógica que queremos que VibeCoding vea
+!csgoserver/*.cfg
+!csgoserver/lgsm/config-lgsm/
+!csgoserver/serverfiles/csgo/cfg/
+!csgoserver/serverfiles/csgo/addons/sourcemod/configs/
+!csgoserver/serverfiles/csgo/addons/sourcemod/plugins/*.smx
+
+# Ignorar archivos de sistema y temporales
+.bash_history
+.bash_logout
+.profile
+.steam/
+.local/
+# Ignora el grueso del servidor
+**/serverfiles/
+**/steamcmd/
+**/.local/
+*.bsp
+*.vpk
+csgoserver/serverfiles/
+csgoserver/lgsm/
+csgoserver/steamcmd/
