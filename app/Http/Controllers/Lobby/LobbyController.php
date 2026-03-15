@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Lobby;
 use App\Events\LobbyUpdated;
 use App\Http\Controllers\Controller;
 use App\Models\Lobby;
+use App\Models\LobbyMatch;
 use App\Models\Server;
+use App\Services\RconClient;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
@@ -80,8 +82,9 @@ class LobbyController extends Controller
         $lobby = $lobby->fresh()->load('users:id,name,steam_nickname,avatar,rank_points')->loadCount('users');
         $server = $server->fresh();
 
-        $isReady = $lobby->users_count >= 1;
-        $missingPlayers = max(0, 1 - $lobby->users_count);
+        $threshold = $this->revealThreshold($server);
+        $isReady = $lobby->users_count >= $threshold;
+        $missingPlayers = max(0, $threshold - $lobby->users_count);
 
         $this->broadcastLobby($server, $lobby, $isReady, $missingPlayers);
 
@@ -125,8 +128,9 @@ class LobbyController extends Controller
 
         $lobby = $lobby->fresh()->load('users:id,name,steam_nickname,avatar,rank_points')->loadCount('users');
         $server = $server->fresh();
-        $isReady = $lobby->users_count >= 1;
-        $missingPlayers = max(0, 2 - $lobby->users_count);
+        $threshold = $this->revealThreshold($server);
+        $isReady = $lobby->users_count >= $threshold;
+        $missingPlayers = max(0, $threshold - $lobby->users_count);
 
         $this->broadcastLobby($server, $lobby, $isReady, $missingPlayers);
 
@@ -139,7 +143,7 @@ class LobbyController extends Controller
     private function resolveLobbyState(Server $server, int $userId): array
     {
         $displayRequiredPlayers = min($server->max_players, 10);
-        $revealThreshold = 1;
+        $revealThreshold = $this->revealThreshold($server);
         $shouldBroadcast = false;
 
         $lobby = $server->lobbies()
@@ -187,6 +191,8 @@ class LobbyController extends Controller
             ]);
             $shouldBroadcast = true;
         }
+
+        $this->startMatchIfReady($server, $lobby);
 
         $this->syncServerPlayers($server);
 
@@ -345,5 +351,53 @@ class LobbyController extends Controller
     private function isLocked(Lobby $lobby): bool
     {
         return $lobby->status === 'live' && $lobby->started_at !== null;
+    }
+
+    private function revealThreshold(Server $server): int
+    {
+        return 2;
+    }
+
+    private function startMatchIfReady(Server $server, Lobby $lobby): void
+    {
+        if ($server->type !== 'mm') {
+            return;
+        }
+
+        $threshold = $this->revealThreshold($server);
+        if ($lobby->users()->count() < $threshold) {
+            return;
+        }
+
+        if (LobbyMatch::query()->where('lobby_id', $lobby->id)->exists()) {
+            return;
+        }
+
+        $token = trim((string) env('GET5_WEBHOOK_TOKEN'));
+        if ($token === '') {
+            return;
+        }
+
+        $baseUrl = rtrim((string) config('app.url'), '/');
+        if ($baseUrl === '') {
+            return;
+        }
+
+        $rconHost = (string) env('RCON_HOST', $server->ip);
+        $rconPort = (int) env('RCON_PORT', $server->port);
+        $rconPassword = (string) env('RCON_PASSWORD', '');
+
+        if ($rconPassword === '') {
+            return;
+        }
+
+        $url = $baseUrl . '/api/get5/match/' . $lobby->id;
+        $command = sprintf(
+            'get5_loadmatch_url "%s" "Authorization" "Bearer %s"',
+            $url,
+            $token
+        );
+
+        app(RconClient::class)->send($rconHost, $rconPort, $rconPassword, $command);
     }
 }
