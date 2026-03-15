@@ -76,6 +76,6 @@ class User extends Authenticatable
      */
     public function lobbies(): BelongsToMany
     {
-        return $this->belongsToMany(Lobby::class)->withTimestamps();
+        return $this->belongsToMany(Lobby::class)->withPivot('team')->withTimestamps();
     }
 }
