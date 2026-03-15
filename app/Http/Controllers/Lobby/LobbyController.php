@@ -61,6 +61,10 @@ class LobbyController extends Controller
             return response()->json(['left' => true]);
         }
 
+        if ($this->isLocked($lobby)) {
+            return response()->json(['message' => 'Match iniciado. No puedes abandonar.'], 409);
+        }
+
         $lobby->users()->detach($userId);
         $lobby->loadCount('users');
 
@@ -101,6 +105,10 @@ class LobbyController extends Controller
 
         if (! $lobby) {
             return response()->json(['message' => 'Lobby no encontrado'], 404);
+        }
+
+        if ($this->isLocked($lobby)) {
+            return response()->json(['message' => 'Match iniciado. No puedes cambiar equipo.'], 409);
         }
 
         $teamSize = $this->teamSize($lobby, $server);
@@ -159,7 +167,7 @@ class LobbyController extends Controller
         $alreadyInLobby = $lobby->users()->where('users.id', $userId)->exists();
         $currentCount = $lobby->users()->count();
 
-        if (! $alreadyInLobby && $currentCount < $lobby->required_players) {
+        if (! $alreadyInLobby && $currentCount < $lobby->required_players && ! $this->isLocked($lobby)) {
             $lobby->users()->syncWithoutDetaching([$userId]);
             $shouldBroadcast = true;
         }
@@ -225,6 +233,7 @@ class LobbyController extends Controller
                 'ct_count' => $ctCount,
                 't_count' => $tCount,
                 'current_team' => $currentTeam,
+                'locked' => $this->isLocked($lobby),
             ],
             'is_ready' => $isReady,
             'users' => $lobby->users->map(fn ($user) => [
@@ -290,6 +299,10 @@ class LobbyController extends Controller
 
     private function ensureTeam(Lobby $lobby, int $userId, int $teamSize): bool
     {
+        if ($this->isLocked($lobby)) {
+            return false;
+        }
+
         $user = $lobby->users()->where('users.id', $userId)->first();
 
         if (! $user) {
@@ -327,5 +340,10 @@ class LobbyController extends Controller
         }
 
         return false;
+    }
+
+    private function isLocked(Lobby $lobby): bool
+    {
+        return $lobby->status === 'live' && $lobby->started_at !== null;
     }
 }

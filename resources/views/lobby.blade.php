@@ -144,6 +144,7 @@
     const joinCt = document.getElementById('join-ct');
     const joinT = document.getElementById('join-t');
     let hasLeft = false;
+    let lobbyLocked = @json($lobby->status === 'live' && $lobby->started_at !== null);
 
     const escapeHtml = (value) => {
         return String(value)
@@ -197,8 +198,8 @@
 
         const currentTeam = data.lobby.current_team;
         const maxTeamSize = data.lobby.team_size ?? 5;
-        joinCt.disabled = (data.lobby.ct_count ?? 0) >= maxTeamSize;
-        joinT.disabled = (data.lobby.t_count ?? 0) >= maxTeamSize;
+        joinCt.disabled = (data.lobby.ct_count ?? 0) >= maxTeamSize || lobbyLocked;
+        joinT.disabled = (data.lobby.t_count ?? 0) >= maxTeamSize || lobbyLocked;
 
         if (currentTeam === 'ct') {
             joinCt.textContent = 'En CT';
@@ -210,6 +211,8 @@
             joinCt.textContent = 'Unirse a CT';
             joinT.textContent = 'Unirse a T';
         }
+
+        lobbyLocked = data.lobby.locked ?? false;
 
         if (data.is_ready) {
             readyPanel.classList.remove('hidden');
@@ -270,6 +273,11 @@
             return;
         }
 
+        if (lobbyLocked) {
+            alert('El match ya ha comenzado. No puedes abandonar ahora.');
+            return;
+        }
+
         hasLeft = true;
 
         const formData = new FormData();
@@ -291,6 +299,11 @@
     };
 
     const setTeam = async (team) => {
+        if (lobbyLocked) {
+            alert('El match ya ha comenzado. No puedes cambiar de equipo.');
+            return;
+        }
+
         try {
             const response = await fetch(teamUrl, {
                 method: 'POST',
