@@ -1,55 +1,62 @@
 @extends('layouts.app')
 
-@section('title', 'Contacto')
+@section('title', __('Contacto'))
 
 @section('content')
-<div class="max-w-4xl mx-auto p-8">
-    <div class="rounded-xl border border-slate-800 bg-slate-900/80 p-6">
-        <h2 class="text-2xl font-black mb-4">Contacto</h2>
-        <p class="text-sm text-slate-300">Escribenos para soporte, colaboraciones o dudas sobre la plataforma.</p>
+<div class="max-w-4xl mx-auto p-4 md:p-8">
+    <div class="rounded-sm border border-[#222222] bg-[#1b1b1b] p-8 shadow-2xl relative overflow-hidden">
+        <h2 class="text-3xl font-black uppercase italic tracking-tighter text-white mb-8 border-b border-[#222222] pb-6">{{ __('Contacto') }}</h2>
+        
+        <p class="text-base text-slate-400 font-medium leading-relaxed mb-10">
+            Utiliza este formulario para enviarnos cualquier consulta, reporte de bug o solicitud de soporte.
+        </p>
 
-        <form id="contact-form" class="mt-6 grid gap-4">
-            <div>
-                <label class="text-xs uppercase tracking-widest text-blue-300">Nombre</label>
-                <input id="contact-name" type="text" class="mt-2 w-full rounded-md border border-slate-800 bg-slate-950/70 p-3 text-sm text-slate-100" placeholder="Tu nombre">
+        <form id="contact-form" class="grid gap-6">
+            <div class="grid md:grid-cols-2 gap-6">
+                <div>
+                    <label class="text-[10px] uppercase font-black tracking-[0.2em] text-[#ff5500] mb-2 block">{{ __('Nombre') }}</label>
+                    <input id="contact-name" type="text" class="w-full rounded-sm border border-[#222222] bg-[#121212] p-4 text-sm text-white placeholder-slate-700 focus:border-[#ff5500] outline-none transition" placeholder="Introduce tu nombre">
+                </div>
+                <div>
+                    <label class="text-[10px] uppercase font-black tracking-[0.2em] text-[#ff5500] mb-2 block">{{ __('Email') }}</label>
+                    <input id="contact-email" type="email" class="w-full rounded-sm border border-[#222222] bg-[#121212] p-4 text-sm text-white placeholder-slate-700 focus:border-[#ff5500] outline-none transition" placeholder="tu@email.com">
+                </div>
             </div>
             <div>
-                <label class="text-xs uppercase tracking-widest text-blue-300">Email</label>
-                <input id="contact-email" type="email" class="mt-2 w-full rounded-md border border-slate-800 bg-slate-950/70 p-3 text-sm text-slate-100" placeholder="tu@email.com">
+                <label class="text-[10px] uppercase font-black tracking-[0.2em] text-[#ff5500] mb-2 block">{{ __('Asunto / Incidencia') }}</label>
+                <input id="contact-subject" type="text" class="w-full rounded-sm border border-[#222222] bg-[#121212] p-4 text-sm text-white placeholder-slate-700 focus:border-[#ff5500] outline-none transition" placeholder="Resumen de la incidencia">
             </div>
             <div>
-                <label class="text-xs uppercase tracking-widest text-blue-300">Asunto / Incidencia</label>
-                <input id="contact-subject" type="text" class="mt-2 w-full rounded-md border border-slate-800 bg-slate-950/70 p-3 text-sm text-slate-100" placeholder="Resumen rapido del problema">
+                <label class="text-[10px] uppercase font-black tracking-[0.2em] text-[#ff5500] mb-2 block">{{ __('Mensaje') }}</label>
+                <textarea id="contact-message" rows="5" class="w-full rounded-sm border border-[#222222] bg-[#121212] p-4 text-sm text-white placeholder-slate-700 focus:border-[#ff5500] outline-none transition" placeholder="Escribe tu mensaje aquí..."></textarea>
             </div>
-            <div>
-                <label class="text-xs uppercase tracking-widest text-blue-300">Mensaje</label>
-                <textarea id="contact-message" rows="4" class="mt-2 w-full rounded-md border border-slate-800 bg-slate-950/70 p-3 text-sm text-slate-100" placeholder="Escribe tu mensaje"></textarea>
-            </div>
-            <button id="contact-submit" type="button" class="rounded-md bg-blue-600 py-3 text-sm font-bold uppercase tracking-wide text-white hover:bg-blue-500">
-                Enviar
+            <button id="contact-submit" type="button" class="w-full rounded-sm bg-[#ff5500] py-4 text-sm font-black uppercase tracking-widest text-white hover:bg-[#ff7733] shadow-lg shadow-black/40 transition">
+                {{ __('Enviar Mensaje') }}
             </button>
         </form>
     </div>
 </div>
 
-<div id="contact-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/80 px-6">
-    <div class="w-full max-w-xl rounded-xl border border-slate-800 bg-slate-900 p-6 shadow-2xl">
-        <div class="flex items-center justify-between">
-            <h3 class="text-lg font-black">Mensaje listo para copiar</h3>
-            <button id="contact-close" class="text-slate-400 hover:text-slate-200">Cerrar</button>
-        </div>
-        <p class="mt-3 text-sm text-slate-300">
-            El sistema de contacto aun esta en desarrollo. Si es urgente, escribeme en Discord: <span class="font-semibold text-blue-300">betans</span>.
-        </p>
-        <div class="mt-4 rounded-lg border border-slate-800 bg-slate-950/70 p-4 text-sm text-slate-200">
-            <pre id="contact-preview" class="whitespace-pre-wrap font-sans"></pre>
-        </div>
-        <div class="mt-5 flex flex-wrap gap-3">
-            <button id="contact-copy" type="button" class="rounded-md bg-blue-600 px-4 py-2 text-sm font-bold uppercase tracking-wide text-white hover:bg-blue-500">
-                Copiar mensaje
+<div id="contact-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-[#121212]/95 backdrop-blur-md px-6">
+    <div class="w-full max-w-xl rounded-sm border border-[#222222] bg-[#1b1b1b] p-8 shadow-2xl">
+        <div class="flex items-center justify-between border-b border-[#222222] pb-4 mb-6">
+            <h3 class="text-xl font-black uppercase italic tracking-tight text-white">Soporte Manual</h3>
+            <button id="contact-close" class="text-slate-500 hover:text-white transition">
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
-            <button id="contact-close-alt" type="button" class="rounded-md border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-200 hover:border-slate-500">
-                Cerrar
+        </div>
+        <p class="text-sm text-slate-400 font-medium leading-relaxed">
+            El sistema de contacto automatizado está en mantenimiento. Por favor, copia este reporte y envíalo vía Discord a <span class="font-bold text-[#ff5500]">betans</span>.
+        </p>
+        <div class="mt-6 rounded-sm border border-[#222222] bg-[#121212] p-5">
+            <pre id="contact-preview" class="whitespace-pre-wrap font-mono text-[11px] text-slate-300"></pre>
+        </div>
+        <div class="mt-8 flex flex-col sm:flex-row gap-3">
+            <button id="contact-copy" type="button" class="flex-1 rounded-sm bg-[#ff5500] px-6 py-3 text-[11px] font-black uppercase tracking-widest text-white hover:bg-[#ff7733] transition">
+                Copiar Reporte
+            </button>
+            <button id="contact-close-alt" type="button" class="flex-1 rounded-sm border border-[#222222] bg-[#1b1b1b] px-6 py-3 text-[11px] font-black uppercase tracking-widest text-white hover:bg-[#222222] transition">
+                Volver
             </button>
         </div>
     </div>
@@ -68,7 +75,7 @@
         const subject = document.getElementById('contact-subject').value.trim();
         const message = document.getElementById('contact-message').value.trim();
 
-        return `Nombre: ${name || 'N/A'}\nEmail: ${email || 'N/A'}\nAsunto: ${subject || 'N/A'}\nMensaje: ${message || 'N/A'}`;
+        return `--- REPORT AFTERRELOAD ---\nName: ${name || 'N/A'}\nEmail: ${email || 'N/A'}\nSubject: ${subject || 'N/A'}\n\nMessage:\n${message || 'N/A'}\n-------------------------`;
     };
 
     const openModal = () => {
@@ -80,7 +87,7 @@
     const closeModal = () => {
         modal.classList.add('hidden');
         modal.classList.remove('flex');
-        copyButton.textContent = 'Copiar mensaje';
+        copyButton.textContent = 'Copiar Reporte';
     };
 
     const fallbackCopy = (text) => {
@@ -128,9 +135,9 @@
             copied = fallbackCopy(text);
         }
 
-        copyButton.textContent = copied ? 'Copiado' : 'No se pudo copiar';
+        copyButton.textContent = copied ? 'Copiado con éxito' : 'Error al copiar';
         setTimeout(() => {
-            copyButton.textContent = 'Copiar mensaje';
+            copyButton.textContent = 'Copiar Reporte';
         }, 2000);
     });
 })();

@@ -70,8 +70,52 @@ class Get5Controller extends Controller
         $winnerTeam = $winner === 'team1' ? $team1Players : ($winner === 'team2' ? $team2Players : []);
         $loserTeam = $winner === 'team1' ? $team2Players : ($winner === 'team2' ? $team1Players : []);
 
-        $this->applyPoints($winnerTeam, 10);
-        $this->applyPoints($loserTeam, -8);
+        // Only apply points on series end to avoid double points in multi-map matches
+        if (in_array($eventName, ['series_result', 'series_end'], true)) {
+            $server = Server::find($serverId);
+            
+            // Only award web rewards if it's a matchmaking server
+            if ($server && $server->type === 'mm') {
+                $this->applyPoints($winnerTeam, 10);
+                $this->applyPoints($loserTeam, -5);
+            }
+
+            // Kick everyone from the lobby
+            $lobby = Lobby::query()
+                ->where('server_id', $serverId)
+                ->where('status', 'live')
+                ->latest('id')
+                ->first();
+
+            if ($lobby) {
+                $lobby->users()->detach(); // Remove everyone
+                $lobby->update(['status' => 'completed']);
+
+                // Close the match record too
+                LobbyMatch::query()
+                    ->where('lobby_id', $lobby->id)
+                    ->whereIn('status', ['pending', 'live'])
+                    ->update(['status' => 'completed']);
+
+                // Clear server player count
+                Server::query()->where('id', $serverId)->update(['current_players' => 0]);
+
+                // Re-enable skin commands
+                $server = $lobby->server;
+                if ($server) {
+                    $rcon = app(\App\Services\RconClient::class);
+                    $rconHost = (string) env('RCON_HOST', $server->ip);
+                    $rconPort = (int) env('RCON_PORT', $server->port);
+                    $rconPassword = (string) env('RCON_PASSWORD', '');
+
+                    if ($rconPassword) {
+                        $rcon->send($rconHost, $rconPort, $rconPassword, 'sm_rename_command sm_ws_disabled_mm sm_ws');
+                        $rcon->send($rconHost, $rconPort, $rconPassword, 'sm_rename_command sm_gloves_disabled_mm sm_gloves');
+                        $rcon->send($rconHost, $rconPort, $rconPassword, 'sm_rename_command sm_agents_disabled_mm sm_agents');
+                        $rcon->send($rconHost, $rconPort, $rconPassword, 'sm_weapons_table_prefix ""');
+                    }
+                }
+            }        }
 
         return response()->json(['status' => 'processed']);
     }
@@ -93,8 +137,16 @@ class Get5Controller extends Controller
             return response()->json(['message' => 'Server missing'], 404);
         }
 
-        $existing = LobbyMatch::query()->where('lobby_id', $lobby->id)->first();
+        $existing = LobbyMatch::query()
+            ->where('lobby_id', $lobby->id)
+            ->whereIn('status', ['pending', 'live'])
+            ->latest('id')
+            ->first();
+
         if ($existing) {
+            if ($existing->status === 'pending') {
+                $existing->update(['status' => 'live']);
+            }
             return response()->json($existing->config);
         }
 
@@ -106,13 +158,27 @@ class Get5Controller extends Controller
 
         $matchId = sprintf('ar-%s-%s', $lobby->id, now()->format('YmdHis'));
         $map = env('GET5_DEFAULT_MAP', 'de_mirage');
-        $playersPerTeam = max(1, intdiv($lobby->required_players ?: min($server->max_players, 10), 2));
+        $requiredPlayers = $lobby->required_players ?: min($server->max_players, 10);
+        $playersPerTeam = max(1, intdiv($requiredPlayers, 2));
+
+        // Generate a random password for the match
+        $password = bin2hex(random_bytes(4));
+
+        // If 10 players, instantly start game (set min_players_to_ready to 10 and auto_ready)
+        $minPlayersToReady = $users->count();
+        $autoReady = ($users->count() >= 10);
 
         $config = [
             'matchid' => $matchId,
             'players_per_team' => $playersPerTeam,
-            'min_players_to_ready' => 2,
+            'min_players_to_ready' => $minPlayersToReady,
             'maplist' => [$map],
+            'password' => $password,
+            'cvars' => [
+                'get5_auto_ready' => $autoReady ? '1' : '0',
+                'get5_move_to_spec_on_ready' => '1',
+                'get5_skip_knife_round' => '1',
+            ],
             'team1' => [
                 'name' => 'AfterReload CT',
                 'players' => $ctPlayers->mapWithKeys(fn ($user) => [$user->steam_id => $user->steam_nickname ?? $user->name])->all(),
@@ -178,6 +244,43 @@ class Get5Controller extends Controller
                 $user->update([
                     'rank_points' => max(0, $next),
                 ]);
+
+                // Sync with LevelsRanks on the server
+                $this->syncLevelRanks($user->steam_id, max(0, $next));
             });
+    }
+
+    /**
+     * Synchronize points with the LevelsRanks database.
+     */
+    private function syncLevelRanks(string $steamId, int $points): void
+    {
+        try {
+            $conn = \Illuminate\Support\Facades\DB::connection('server');
+
+            // SteamID in LevelRanks (lvl_base) is usually SteamID2 or SteamID3
+            // but we'll try to match it. If the server uses SteamID64, we use that.
+            // Most modern LR versions use SteamID64 or match whatever is provided.
+            
+            $exists = $conn->table('lvl_base')->where('steam', $steamId)->exists();
+
+            if ($exists) {
+                $conn->table('lvl_base')
+                    ->where('steam', $steamId)
+                    ->update(['value' => $points]);
+            } else {
+                // If they don't exist, we can't easily create them because LR 
+                // requires other fields (name, etc.), but we'll try a basic insert 
+                // if the table allows it.
+                $conn->table('lvl_base')->insertOrIgnore([
+                    'steam' => $steamId,
+                    'value' => $points,
+                    'name' => 'WebSync Player',
+                    'lastconnect' => time(),
+                ]);
+            }
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("LevelRanks Sync Failed for {$steamId}: " . $e->getMessage());
+        }
     }
 }

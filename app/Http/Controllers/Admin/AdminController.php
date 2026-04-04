@@ -37,7 +37,7 @@ class AdminController extends Controller
     public function updateRole(Request $request, User $user): RedirectResponse
     {
         $role = $request->string('role')->trim()->lower()->value();
-        $allowed = ['user', 'store', 'admin'];
+        $allowed = ['user', 'store', 'admin', 'betatester'];
 
         if (! in_array($role, $allowed, true)) {
             return back()->with('status', 'Rol no valido.');
@@ -48,12 +48,25 @@ class AdminController extends Controller
         return back()->with('status', 'Rol actualizado.');
     }
 
+    public function unban(User $user): RedirectResponse
+    {
+        if (! $user->banned_at) {
+            return back()->with('status', 'El usuario ya estaba activo.');
+        }
+
+        $user->update(['banned_at' => null]);
+
+        return back()->with('status', 'Usuario desbloqueado.');
+    }
+
     public function toggleBan(User $user): RedirectResponse
     {
+        $wasBanned = $user->banned_at !== null;
+
         $user->update([
-            'banned_at' => $user->banned_at ? null : now(),
+            'banned_at' => $wasBanned ? null : now(),
         ]);
 
-        return back()->with('status', $user->banned_at ? 'Usuario desbloqueado.' : 'Usuario bloqueado.');
+        return back()->with('status', $wasBanned ? 'Usuario desbloqueado.' : 'Usuario bloqueado.');
     }
 }

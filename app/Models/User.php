@@ -66,6 +66,11 @@ class User extends Authenticatable
         return $this->isAdmin();
     }
 
+    public function isBetaTester(): bool
+    {
+        return $this->role === 'betatester';
+    }
+
     public function isBanned(): bool
     {
         return $this->banned_at !== null;

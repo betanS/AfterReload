@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Lobby;
 use App\Models\LobbyMatch;
 use App\Models\Server;
+use App\Services\LobbyHeartbeatCleaner;
 use App\Services\RconClient;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
@@ -16,11 +17,16 @@ class LobbyController extends Controller
 {
     public function show(Server $server): View
     {
+        $this->ensureBetaAccess($server);
+
         if (! $server->isOnline()) {
             return redirect()->route('home')->with('server_error', 'Servidor offline. Intenta mas tarde.');
         }
 
         [$server, $lobby, $isReady, $missingPlayers] = $this->resolveLobbyState($server, Auth::id());
+
+        // Ensure users are loaded for the view
+        $lobby->load('users:id,name,steam_nickname,avatar,rank_points');
 
         [$teamSize, $ctCount, $tCount] = $this->teamSnapshot($lobby, $server);
         $currentTeam = $this->currentUserTeam($lobby, Auth::id());
@@ -28,8 +34,10 @@ class LobbyController extends Controller
         return view('lobby', [
             'server' => $server,
             'lobby' => $lobby,
+            'displayLobbyId' => $server->id,
             'isReady' => $isReady,
             'missingPlayers' => $missingPlayers,
+            'isUnlimitedLobby' => $this->isUnlimitedLobby($server),
             'teamSize' => $teamSize,
             'ctCount' => $ctCount,
             'tCount' => $tCount,
@@ -39,17 +47,51 @@ class LobbyController extends Controller
 
     public function status(Server $server): JsonResponse
     {
+        $this->ensureBetaAccess($server);
+
         if (! $server->isOnline()) {
             return response()->json(['offline' => true], 409);
         }
 
+        $this->updateHeartbeat($server, Auth::id());
+
         [$server, $lobby, $isReady, $missingPlayers] = $this->resolveLobbyState($server, Auth::id());
+        
+        // Ensure users are loaded with required fields
+        $lobby->load('users:id,name,steam_nickname,avatar,rank_points');
 
         return response()->json($this->buildPayload($server, $lobby, $isReady, $missingPlayers));
     }
 
+    public function heartbeat(Server $server): JsonResponse
+    {
+        $this->ensureBetaAccess($server);
+
+        $this->updateHeartbeat($server, Auth::id());
+        return response()->json(['ok' => true]);
+    }
+
+    private function updateHeartbeat(Server $server, int $userId): void
+    {
+        $lobby = $server->lobbies()
+            ->whereIn('status', ['waiting', 'live'])
+            ->whereHas('users', fn ($query) => $query->where('users.id', $userId))
+            ->latest('id')
+            ->first();
+
+        if ($lobby) {
+            \Illuminate\Support\Facades\Cache::put(
+                "lobby:{$lobby->id}:user:{$userId}:heartbeat",
+                now()->timestamp,
+                60
+            );
+        }
+    }
+
     public function leave(Server $server): JsonResponse
     {
+        $this->ensureBetaAccess($server);
+
         $userId = Auth::id();
 
         $lobby = $server->lobbies()
@@ -63,7 +105,7 @@ class LobbyController extends Controller
             return response()->json(['left' => true]);
         }
 
-        if ($this->isLocked($lobby)) {
+        if ($this->isLocked($lobby, $server)) {
             return response()->json(['message' => 'Match iniciado. No puedes abandonar.'], 409);
         }
 
@@ -83,8 +125,8 @@ class LobbyController extends Controller
         $server = $server->fresh();
 
         $threshold = $this->revealThreshold($server);
-        $isReady = $lobby->users_count >= $threshold;
-        $missingPlayers = max(0, $threshold - $lobby->users_count);
+        $isReady = ! $this->isUnlimitedLobby($server) && $lobby->status === 'live';
+        $missingPlayers = $this->isUnlimitedLobby($server) ? 0 : max(0, $threshold - $lobby->users_count);
 
         $this->broadcastLobby($server, $lobby, $isReady, $missingPlayers);
 
@@ -93,6 +135,12 @@ class LobbyController extends Controller
 
     public function setTeam(Server $server): JsonResponse
     {
+        $this->ensureBetaAccess($server);
+
+        if ($this->isUnlimitedLobby($server)) {
+            return response()->json(['message' => 'Los equipos no están habilitados en servidores públicos.'], 409);
+        }
+
         $userId = Auth::id();
         $team = request()->string('team')->lower()->value();
 
@@ -110,7 +158,7 @@ class LobbyController extends Controller
             return response()->json(['message' => 'Lobby no encontrado'], 404);
         }
 
-        if ($this->isLocked($lobby)) {
+        if ($this->isLocked($lobby, $server)) {
             return response()->json(['message' => 'Match iniciado. No puedes cambiar equipo.'], 409);
         }
 
@@ -129,8 +177,46 @@ class LobbyController extends Controller
         $lobby = $lobby->fresh()->load('users:id,name,steam_nickname,avatar,rank_points')->loadCount('users');
         $server = $server->fresh();
         $threshold = $this->revealThreshold($server);
-        $isReady = $lobby->users_count >= $threshold;
-        $missingPlayers = max(0, $threshold - $lobby->users_count);
+        $isReady = ! $this->isUnlimitedLobby($server) && $lobby->status === 'live';
+        $missingPlayers = $this->isUnlimitedLobby($server) ? 0 : max(0, $threshold - $lobby->users_count);
+
+        $this->broadcastLobby($server, $lobby, $isReady, $missingPlayers);
+
+        return response()->json($this->buildPayload($server, $lobby, $isReady, $missingPlayers));
+    }
+
+    public function toggleReady(Server $server): JsonResponse
+    {
+        $this->ensureBetaAccess($server);
+
+        $userId = Auth::id();
+        $lobby = $server->lobbies()
+            ->whereIn('status', ['waiting', 'live'])
+            ->whereHas('users', fn ($query) => $query->where('users.id', $userId))
+            ->latest('id')
+            ->first();
+
+        if (! $lobby) {
+            return response()->json(['message' => 'Lobby no encontrado'], 404);
+        }
+
+        if ($this->isLocked($lobby, $server)) {
+            return response()->json(['message' => 'Match ya iniciado.'], 409);
+        }
+
+        $user = $lobby->users()->where('users.id', $userId)->first();
+        $currentState = (bool) ($user->pivot?->is_ready ?? false);
+        
+        $lobby->users()->updateExistingPivot($userId, ['is_ready' => ! $currentState]);
+
+        $lobby = $lobby->fresh()->load('users:id,name,steam_nickname,avatar,rank_points')->loadCount('users');
+        
+        $this->startMatchIfReady($server, $lobby);
+
+        $server = $server->fresh();
+        $threshold = $this->revealThreshold($server);
+        $isReady = ! $this->isUnlimitedLobby($server) && $lobby->status === 'live';
+        $missingPlayers = $this->isUnlimitedLobby($server) ? 0 : max(0, $threshold - $lobby->users_count);
 
         $this->broadcastLobby($server, $lobby, $isReady, $missingPlayers);
 
@@ -142,15 +228,14 @@ class LobbyController extends Controller
      */
     private function resolveLobbyState(Server $server, int $userId): array
     {
+        $this->cleanupInactiveLobbyUsers($server, $userId);
+
         $displayRequiredPlayers = min($server->max_players, 10);
         $revealThreshold = $this->revealThreshold($server);
         $shouldBroadcast = false;
 
         $lobby = $server->lobbies()
-            ->whereIn('status', ['waiting', 'live'])
-            ->withCount('users')
-            ->whereRaw('(select count(*) from lobby_user where lobby_user.lobby_id = lobbies.id) < lobbies.required_players')
-            ->orderByRaw("case when status = 'waiting' then 0 else 1 end")
+            ->orderByRaw("case when status in ('waiting', 'live') then 0 else 1 end")
             ->latest('id')
             ->first();
 
@@ -159,6 +244,16 @@ class LobbyController extends Controller
                 'status' => 'waiting',
                 'name' => sprintf('Lobby %s #%s', $server->name, now()->format('His')),
                 'required_players' => $displayRequiredPlayers,
+            ]);
+            $shouldBroadcast = true;
+        } elseif ($lobby->status === 'completed') {
+            // Reset existing lobby
+            $lobby->users()->detach();
+            $lobby->update([
+                'status' => 'waiting',
+                'name' => sprintf('Lobby %s #%s', $server->name, now()->format('His')),
+                'required_players' => $displayRequiredPlayers,
+                'started_at' => null,
             ]);
             $shouldBroadcast = true;
         }
@@ -171,27 +266,22 @@ class LobbyController extends Controller
         $alreadyInLobby = $lobby->users()->where('users.id', $userId)->exists();
         $currentCount = $lobby->users()->count();
 
-        if (! $alreadyInLobby && $currentCount < $lobby->required_players && ! $this->isLocked($lobby)) {
+        // Only allow joining if it's not locked or we are already in it
+        $canJoinByCapacity = $this->isUnlimitedLobby($server) || $currentCount < $lobby->required_players;
+        if (! $alreadyInLobby && $canJoinByCapacity && ! $this->isLocked($lobby, $server)) {
             $lobby->users()->syncWithoutDetaching([$userId]);
             $shouldBroadcast = true;
         }
 
-        $teamSize = $this->teamSize($lobby, $server);
-        if ($this->ensureTeam($lobby, $userId, $teamSize)) {
-            $shouldBroadcast = true;
+        if (! $this->isUnlimitedLobby($server)) {
+            $teamSize = $this->teamSize($lobby, $server);
+            if ($this->ensureTeam($lobby, $server, $userId, $teamSize)) {
+                $shouldBroadcast = true;
+            }
         }
 
         $lobby->loadCount('users');
-        $playerCount = $lobby->users_count;
-
-        if ($playerCount >= $revealThreshold && $lobby->status === 'waiting') {
-            $lobby->update([
-                'status' => 'live',
-                'started_at' => now(),
-            ]);
-            $shouldBroadcast = true;
-        }
-
+        
         $this->startMatchIfReady($server, $lobby);
 
         $this->syncServerPlayers($server);
@@ -199,8 +289,10 @@ class LobbyController extends Controller
         $lobby = $lobby->fresh()->load('users:id,name,steam_nickname,avatar,rank_points')->loadCount('users');
         $server = $server->fresh();
 
-        $isReady = $lobby->users_count >= $revealThreshold;
-        $missingPlayers = max(0, $revealThreshold - $lobby->users_count);
+        $isReady = ! $this->isUnlimitedLobby($server) && $lobby->status === 'live';
+        $missingPlayers = $this->isUnlimitedLobby($server)
+            ? 0
+            : max(0, $revealThreshold - $lobby->users_count);
 
         if ($shouldBroadcast) {
             $this->broadcastLobby($server, $lobby, $isReady, $missingPlayers);
@@ -222,16 +314,25 @@ class LobbyController extends Controller
         [$teamSize, $ctCount, $tCount] = $this->teamSnapshot($lobby, $server);
         $currentTeam = $this->currentUserTeam($lobby, Auth::id());
 
+        $password = null;
+        if ($server->type === 'mm') {
+            $match = LobbyMatch::query()->where('lobby_id', $lobby->id)->first();
+            $password = $match?->config['password'] ?? null;
+        }
+
         return [
             'server' => [
                 'id' => $server->id,
                 'name' => $server->name,
+                'type' => $server->type,
                 'ip' => $server->ip,
                 'port' => $server->port,
+                'password' => $password,
             ],
             'lobby' => [
-                'id' => $lobby->id,
+                'id' => $server->id,
                 'status' => $lobby->status,
+                'is_unlimited' => $this->isUnlimitedLobby($server),
                 'required_players' => $lobby->required_players,
                 'users_count' => $lobby->users_count,
                 'missing_players' => $missingPlayers,
@@ -239,7 +340,7 @@ class LobbyController extends Controller
                 'ct_count' => $ctCount,
                 't_count' => $tCount,
                 'current_team' => $currentTeam,
-                'locked' => $this->isLocked($lobby),
+                'locked' => $this->isLocked($lobby, $server),
             ],
             'is_ready' => $isReady,
             'users' => $lobby->users->map(fn ($user) => [
@@ -248,6 +349,7 @@ class LobbyController extends Controller
                 'avatar' => $user->avatar,
                 'rank_points' => $user->rank_points,
                 'team' => $user->pivot?->team,
+                'is_ready' => (bool) $user->pivot?->is_ready,
             ])->values(),
         ];
     }
@@ -303,9 +405,9 @@ class LobbyController extends Controller
         return $user?->pivot?->team;
     }
 
-    private function ensureTeam(Lobby $lobby, int $userId, int $teamSize): bool
+    private function ensureTeam(Lobby $lobby, Server $server, int $userId, int $teamSize): bool
     {
-        if ($this->isLocked($lobby)) {
+        if ($this->isLocked($lobby, $server)) {
             return false;
         }
 
@@ -348,13 +450,45 @@ class LobbyController extends Controller
         return false;
     }
 
-    private function isLocked(Lobby $lobby): bool
+    private function cleanupInactiveLobbyUsers(Server $server, ?int $skipUserId): bool
     {
+        return app(LobbyHeartbeatCleaner::class)->cleanup($server, $skipUserId);
+    }
+
+    private function ensureBetaAccess(Server $server): void
+    {
+        if ($server->type !== 'mm') {
+            return;
+        }
+
+        $user = Auth::user();
+        if ($user && ($user->isAdmin() || $user->isBetaTester())) {
+            return;
+        }
+
+        abort(403, 'Matchmaking reservado para beta testers.');
+    }
+
+    private function isUnlimitedLobby(Server $server): bool
+    {
+        return $server->type === 'public';
+    }
+
+    private function isLocked(Lobby $lobby, Server $server): bool
+    {
+        if ($server->type === 'public') {
+            return false;
+        }
+
         return $lobby->status === 'live' && $lobby->started_at !== null;
     }
 
     private function revealThreshold(Server $server): int
     {
+        if ($this->isUnlimitedLobby($server)) {
+            return 0;
+        }
+
         return 2;
     }
 
@@ -364,9 +498,33 @@ class LobbyController extends Controller
             return;
         }
 
-        $threshold = $this->revealThreshold($server);
-        if ($lobby->users()->count() < $threshold) {
+        if ($lobby->status === 'live' && $lobby->started_at !== null) {
             return;
+        }
+
+        $threshold = $this->revealThreshold($server);
+        $playerCount = $lobby->users()->count();
+        
+        if ($playerCount < $threshold) {
+            return;
+        }
+
+        // Check if everyone is ready
+        $readyCount = $lobby->users()->wherePivot('is_ready', true)->count();
+        if ($readyCount < $playerCount) {
+            return;
+        }
+
+        // Check if teams are balanced (each team should have playerCount/2)
+        $teamSize = intdiv($playerCount, 2);
+        [$ctCount, $tCount] = $this->teamCounts($lobby);
+        
+        if ($ctCount !== $teamSize || $tCount !== $teamSize) {
+            // Optional: You might want to allow start even if not perfectly balanced if it's not exactly 10 players
+            // but for MM it's usually balanced.
+            if ($playerCount === 10 && ($ctCount !== 5 || $tCount !== 5)) {
+                return;
+            }
         }
 
         if (LobbyMatch::query()->where('lobby_id', $lobby->id)->exists()) {
@@ -383,13 +541,37 @@ class LobbyController extends Controller
             return;
         }
 
-        $rconHost = (string) env('RCON_HOST', $server->ip);
-        $rconPort = (int) env('RCON_PORT', $server->port);
-        $rconPassword = (string) env('RCON_PASSWORD', '');
+        $rconHost = $server->ip;
+        $rconPort = $server->port;
+        $rconPassword = $server->rcon_password ?: (string) env('RCON_PASSWORD', '');
 
         if ($rconPassword === '') {
             return;
         }
+
+        // Update lobby status to live/locked
+        $lobby->update([
+            'status' => 'live',
+            'started_at' => now(),
+        ]);
+
+        $rcon = app(RconClient::class);
+        // Configure the web API on the server first
+        $rcon->send($rconHost, $rconPort, $rconPassword, sprintf('get5_web_api_url "%s/api/get5/events"', $baseUrl));
+        $rcon->send($rconHost, $rconPort, $rconPassword, sprintf('get5_web_api_key "%s"', $token));
+
+        // Identify this server in its requests to the website
+        $rcon->send($rconHost, $rconPort, $rconPassword, 'get5_web_api_header_key "Get5-ServerId"');
+        $rcon->send($rconHost, $rconPort, $rconPassword, sprintf('get5_web_api_header_value "%s"', $server->id));
+
+        // Use separate databases for MM skins to avoid mixing with Public server
+        $rcon->send($rconHost, $rconPort, $rconPassword, 'sm_weapons_db_connection "weapons_mm"');
+        $rcon->send($rconHost, $rconPort, $rconPassword, 'sm_weapons_table_prefix "mm_"');
+
+        // Temporarily disable skin commands for the duration of the match
+        $rcon->send($rconHost, $rconPort, $rconPassword, 'sm_rename_command sm_ws sm_ws_disabled_mm');
+        $rcon->send($rconHost, $rconPort, $rconPassword, 'sm_rename_command sm_gloves sm_gloves_disabled_mm');
+        $rcon->send($rconHost, $rconPort, $rconPassword, 'sm_rename_command sm_agents sm_agents_disabled_mm');
 
         $url = $baseUrl . '/api/get5/match/' . $lobby->id;
         $command = sprintf(
@@ -398,6 +580,6 @@ class LobbyController extends Controller
             $token
         );
 
-        app(RconClient::class)->send($rconHost, $rconPort, $rconPassword, $command);
+        $rcon->send($rconHost, $rconPort, $rconPassword, $command);
     }
 }

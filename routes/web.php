@@ -9,6 +9,10 @@ use App\Models\Server;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
+use App\Http\Controllers\LanguageController;
+
+Route::get('/lang/{locale}', [LanguageController::class, 'switch'])->name('lang.switch');
+
 Route::get('/', function () {
     return view('welcome');
 })->name('welcome');
@@ -35,26 +39,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/servers/data', function () {
         $user = request()->user();
 
-        $activeLobbies = $user->lobbies()
-            ->whereIn('status', ['waiting', 'live'])
-            ->get();
-
-        foreach ($activeLobbies as $lobby) {
-            $lobby->users()->detach($user->id);
-
-            $remainingPlayers = $lobby->users()->count();
-
-            if ($remainingPlayers < $lobby->required_players) {
-                $lobby->update([
-                    'status' => 'waiting',
-                    'started_at' => null,
-                ]);
-            }
-
-            $lobby->server()->update([
-                'current_players' => $remainingPlayers,
-            ]);
-        }
+        // No more aggressive detach here. Heartbeat system in LobbyController handles this.
 
         $servers = Server::all();
 
@@ -108,12 +93,15 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/lobby/{server}', [LobbyController::class, 'show'])->name('lobby.show');
     Route::get('/lobby/{server}/status', [LobbyController::class, 'status'])->name('lobby.status');
+    Route::post('/lobby/{server}/heartbeat', [LobbyController::class, 'heartbeat'])->name('lobby.heartbeat');
     Route::post('/lobby/{server}/leave', [LobbyController::class, 'leave'])->name('lobby.leave');
     Route::post('/lobby/{server}/team', [LobbyController::class, 'setTeam'])->name('lobby.team');
+    Route::post('/lobby/{server}/ready', [LobbyController::class, 'toggleReady'])->name('lobby.ready');
 
     Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
     Route::post('/admin/users/{user}/role', [AdminController::class, 'updateRole'])->name('admin.users.role');
     Route::post('/admin/users/{user}/ban', [AdminController::class, 'toggleBan'])->name('admin.users.ban');
+    Route::post('/admin/users/{user}/unban', [AdminController::class, 'unban'])->name('admin.users.unban');
 
     Route::post('/logout', [SteamController::class, 'logout'])->name('logout');
 });

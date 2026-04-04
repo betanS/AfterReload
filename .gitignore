@@ -1,55 +1,32 @@
-*.log
-.DS_Store
-.env
-.env.backup
-.env.production
-.phpactor.json
-.phpunit.result.cache
-/.fleet
-/.idea
-/.nova
-/.phpunit.cache
-/.vscode
-/.zed
-/auth.json
+# --- LARAVEL VANILLA ---
 /node_modules
 /public/build
 /public/hot
 /public/storage
 /storage/*.key
-/storage/pail
 /vendor
-Homestead.json
-Homestead.yaml
-Thumbs.db
-# --- AfterReload CSGO Ignore ---
-# Ignorar absolutamente todo lo que hay dentro de la carpeta del servidor
-csgoserver/**
+.env
+.env.backup
+.env.production
+.phpunit.result.cache
+/auth.json
 
-# Re-incluir solo configuraciones y lógica necesaria
-!csgoserver/
-!csgoserver/*.cfg
-!csgoserver/lgsm/
-!csgoserver/lgsm/config-lgsm/
-!csgoserver/lgsm/config-lgsm/csgoserver/
-!csgoserver/lgsm/config-lgsm/csgoserver/*.cfg
-!csgoserver/serverfiles/
-!csgoserver/serverfiles/csgo/
-!csgoserver/serverfiles/csgo/cfg/
-!csgoserver/serverfiles/csgo/cfg/*.cfg
-!csgoserver/serverfiles/csgo/addons/sourcemod/configs/
-!csgoserver/serverfiles/csgo/addons/sourcemod/configs/*.cfg
-!csgoserver/serverfiles/csgo/addons/sourcemod/plugins/*.smx
-
-# Ignorar archivos de sistema y temporales
+# --- CSGO & SYSTEM SECURITY ---
+csgoserver/
+server/
+.ssh/
 .bash_history
 .bash_logout
 .profile
-.steam/
-.local/
-# Ignora el grueso del servidor (binarios y contenido pesado)
-**/steamcmd/
-**/.local/
-*.bsp
-*.vpk
-csgoserver/steamcmd/**
+.wget-hsts
+csgoserver/serverfiles/
+csgoserver/steamcmd/
+csgoserver/.local/
+csgoserver/.cache/
+
+# --- EXCEPTIONS ---
+!csgoserver/
+!csgoserver/lgsm/config-lgsm/csgoserver/*.cfg
+!csgoserver/serverfiles/csgo/cfg/*.cfg
+!csgoserver/serverfiles/csgo/addons/sourcemod/configs/*.cfg
+!csgoserver/serverfiles/csgo/addons/sourcemod/configs/*.ini

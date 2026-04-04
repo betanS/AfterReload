@@ -63,6 +63,19 @@ return [
             ]) : [],
         ],
 
+        'server' => [
+            'driver' => 'mysql',
+            'host' => env('DB_SERVER_HOST', '127.0.0.1'),
+            'port' => env('DB_SERVER_PORT', '3306'),
+            'database' => env('DB_SERVER_DATABASE', 'afterreload_server'),
+            'username' => env('DB_SERVER_USERNAME', 'afterreload_user'),
+            'password' => env('DB_SERVER_PASSWORD', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+        ],
+
         'mariadb' => [
             'driver' => 'mariadb',
             'url' => env('DB_URL'),

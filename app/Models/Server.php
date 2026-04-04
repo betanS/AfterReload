@@ -17,6 +17,7 @@ class Server extends Model
         'name',
         'ip',
         'port',
+        'rcon_password',
         'type',
         'max_players',
         'current_players',

@@ -35,6 +35,6 @@ class Lobby extends Model
      */
     public function users(): BelongsToMany
     {
-        return $this->belongsToMany(User::class)->withPivot('team')->withTimestamps();
+        return $this->belongsToMany(User::class)->withPivot('team', 'is_ready')->withTimestamps();
     }
 }

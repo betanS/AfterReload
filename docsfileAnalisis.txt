@@ -1,0 +1,64 @@
+5. ANÁLISIS
+
+5.1 Identificación de requisitos del software
+
+Requisitos funcionales (RF)
+● RF1: Autenticación mediante Steam OpenID. La plataforma debe permitir el login seguro del usuario vinculando su perfil web con su identidad de Steam.
+● RF2: Gestión reactiva de Lobbies. La web debe ofrecer salas de espera dinámicas que se actualicen sin recarga de página mediante WebSockets.
+● RF3: Balanceo y Selección de Equipos. La aplicación debe gestionar la lógica de asignación de bandos (CT/T) y validar que los equipos estén equilibrados antes del inicio.
+● RF4: Orquestación mediante RCON. El backend debe ser capaz de enviar instrucciones remotas al servidor de juego para cargar el mapa y la configuración de partida.
+● RF5: API de Configuración de Matches (JSON). La web debe exponer un endpoint seguro que genere dinámicamente el archivo de configuración del partido.
+● RF6: Procesamiento Automatizado de Webhooks. El sistema debe recibir y validar notificaciones POST externas para registrar el fin de partida y los puntos de ranking.
+● RF7: Sistema de Ranking Persistente. El backend debe recalcular los puntos de los usuarios tras cada encuentro y sincronizarlos en la base de datos local.
+
+Requisitos no funcionales (RNF)
+● RNF1: Tiempo real y Concurrencia. La interfaz debe reflejar cambios de estado (jugador listo, cambio de equipo) con una latencia inferior a 500ms.
+● RNF2: Seguridad de Credenciales. Las claves de acceso RCON y tokens de API deben gestionarse de forma cifrada en el entorno del servidor web.
+● RNF3: Integridad de Datos. El sistema debe prevenir duplicidades en el registro de resultados mediante hashes de verificación únicos por match.
+● RNF4: Usabilidad y UX. La interfaz debe ser intuitiva, permitiendo completar el flujo de inicio de partida en menos de tres interacciones.
+
+5.2 Identificación de actores del sistema
+● Jugador: Usuario autenticado que interactúa con la interfaz web para participar en las partidas.
+● Administrador: Usuario con privilegios para gestionar la configuración de la infraestructura web y los servidores vinculados.
+● Sistema Externo (Servidor de Juego): Entidad que consume la API de la web y envía reportes de resultados vía Webhooks.
+
+5.3 Modelo del dominio
+
+Diagrama Entidad - Relación (Base de Datos)
+La base de datos se organiza en torno a las siguientes entidades clave:
+● User: Almacena perfiles de Steam, roles y puntos de ranking.
+● Server: Almacena credenciales de conexión IP, puerto y clave RCON.
+● Lobby: Representa el estado actual de una sala (Activa, Ingame, Finalizada).
+● Lobby_User (Pivot): Tabla relacional que gestiona el equipo seleccionado y el estado de preparación (is_ready) de cada jugador.
+● LobbyMatch: Almacena el historial de encuentros generados y su configuración JSON.
+● MatchResult: Registra el resultado final procesado por la web tras el evento del match.
+
+Diagrama UML de Clases (Arquitectura de Software)
+Se definen las siguientes clases en el backend de Laravel:
+● Modelos: User, Server, Lobby, LobbyMatch, MatchResult, MatchResult.
+● Servicios: RconClient (Gestión de red), HeartbeatService (Monitorización de salud del servidor).
+● Controladores: LobbyController (Lógica de sala), WebhookController (Recepción de datos API), AuthController (Gestión Steam).
+
+5.4 Subsistemas de análisis
+● Subsistema de Matchmaking: Gestión lógica de la cola de espera y asignación de equipos.
+● Subsistema de Comunicación Remota: Capa de abstracción para el envío de paquetes RCON.
+● Subsistema de API y Webhooks: Interfaz de comunicación REST para la recepción de resultados externos.
+
+5.5 Especificación de Casos de Uso
+
+Descripción de Caso de Uso: "Flujo de Preparación de Partida"
+1. El Jugador accede a la vista de Lobby y selecciona su equipo.
+2. El Jugador acciona el botón "LISTO", disparando un evento a través de WebSockets que notifica al resto de usuarios en tiempo real.
+3. Al detectarse el quórum total, el backend genera el JSON de configuración y envía la orden RCON de carga al servidor de destino.
+4. La web actualiza la interfaz mostrando los datos de acceso al jugador de forma automática.
+
+5.6 Definición y Prototipo de la Interfaz de Usuario
+La interfaz se ha diseñado bajo los principios de una Single Page Application (SPA):
+● Vistas Dinámicas: Uso de componentes Blade/Livewire para evitar refrescos innecesarios.
+● Visualización de Equipos: Panel dividido en dos columnas (CT vs T) con indicadores visuales de estado (verde para listo, rojo para espera).
+● Dashboard de Administración: Interfaz CRUD para la gestión de servidores y supervisión de logs de API.
+● Feedback en Tiempo Real: Notificaciones integradas para errores de red o actualizaciones de estado de la sala.
+
+5.7 Análisis de los usuarios
+● Usuario Competitivo: Prioriza la inmediatez y la claridad de la información del ranking.
+● Administrador del Sitio: Requiere herramientas de depuración rápidas para monitorizar la comunicación entre la web y los servidores.

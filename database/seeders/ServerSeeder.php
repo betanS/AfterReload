@@ -36,6 +36,7 @@ class ServerSeeder extends Seeder
             'name' => 'AfterReload Matchmaking',
             'ip' => '185.47.131.129',
             'port' => 27017,
+            'rcon_password' => 'admin0ku4EDZb',
             'type' => 'mm',
             'max_players' => 10,
             'current_players' => 0,

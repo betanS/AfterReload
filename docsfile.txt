@@ -1,0 +1,61 @@
+1. INTRODUCCIÓN
+El proyecto AfterReload es una plataforma web Full-Stack desarrollada para la gestión automatizada de encuentros competitivos de Counter-Strike. La aplicación actúa como un orquestador centralizado que permite a los usuarios gestionar lobbies, organizar equipos y monitorizar el estado de partidas en tiempo real sin intervención manual de administradores.
+
+El sistema se basa en una arquitectura web moderna que integra una interfaz reactiva con un backend robusto capaz de comunicarse con servidores de juego mediante protocolos de red (RCON) y APIs REST. El enfoque principal es la experiencia de usuario (UX) en el flujo de emparejamiento, emulando sistemas profesionales de eSports.
+
+Se distinguen tres niveles de acceso gestionados por la aplicación:
+● Administrador: Control total sobre la configuración de servidores y gestión de usuarios.
+● Usuario/Jugador: Capacidad para unirse a lobbies, seleccionar equipo y participar en el ranking.
+● Sistema (API): Interfaz de comunicación para la recepción de resultados automatizados.
+
+2. OBJETIVOS
+2.1 Objetivo general
+Diseñar y desarrollar una plataforma web de matchmaking que automatice el ciclo de vida de una partida competitiva mediante la integración de tecnologías web y protocolos de comunicación Source.
+
+2.2 Objetivos específicos
+● Implementar una interfaz reactiva en tiempo real utilizando WebSockets para la gestión de lobbies.
+● Desarrollar un sistema de autenticación e integración de perfiles mediante la API de Steam (OpenID).
+● Construir un cliente RCON (Remote Console) en PHP para la ejecución de comandos desde el backend.
+● Diseñar una base de datos relacional para el seguimiento de estadísticas, rankings y estados de servidores.
+● Desarrollar una API JSON para el intercambio de configuraciones dinámicas con sistemas externos.
+● Automatizar el procesamiento de resultados de partidas mediante el consumo de Webhooks HTTP.
+
+2.3 Necesidad cubierta
+AfterReload soluciona la carencia de herramientas web accesibles y ligeras para comunidades privadas de gaming. Elimina la necesidad de configuraciones manuales en archivos de servidor, trasladando toda la lógica de gestión a una interfaz web intuitiva que centraliza la administración y el juego en un solo lugar.
+
+3. ESTADO DEL ARTE
+3.1 Sistemas de información actuales
+Existen plataformas comerciales de gran escala (FACEIT, ESEA) y proyectos de código abierto (Get5-Web). Sin embargo, AfterReload aporta una solución personalizada que:
+● Se integra directamente con sistemas de ranking locales.
+● Ofrece una interfaz simplificada centrada en la rapidez de uso (Join & Play).
+● Permite la gestión de servidores privados sin dependencia de infraestructuras de terceros.
+
+4. PLANIFICACIÓN
+4.1 Desarrollo del sistema de información
+Metodología de desarrollo
+Se ha empleado una metodología ágil basada en prototipado evolutivo, dividida en las siguientes fases web:
+1. Análisis de Requisitos y Modelado de Datos: Definición de las entidades de la base de datos y flujos de usuario.
+2. Desarrollo del Backend: Implementación de la lógica de negocio en Laravel y controladores de API.
+3. Integración de Comunicaciones: Desarrollo de la capa RCON para el envío de directivas al exterior.
+4. Desarrollo de Frontend: Construcción de vistas Blade y componentes reactivos con Livewire/JS.
+5. Validación y Pruebas: Pruebas de integración entre la web y los reportes de resultados.
+
+Recursos hardware
+Para el despliegue de la solución web se requiere:
+➔ Servidor Web (VPS): Capaz de ejecutar el stack PHP/Nginx/MySQL.
+➔ Almacenamiento: SSD para la persistencia de la base de datos y logs.
+➔ Red: Conectividad estable para la gestión de WebSockets y peticiones RCON.
+
+4.3 Recursos software
+El ecosistema tecnológico del proyecto se centra en herramientas de desarrollo web:
+● Framework Backend: Laravel 11 (PHP 8.3).
+● Base de Datos: MySQL para la persistencia de usuarios, lobbies y estadísticas.
+● Frontend: TailwindCSS para el diseño UI y JavaScript/Livewire para la reactividad.
+● Comunicaciones: Laravel Echo y Pusher para el tiempo real.
+● Entorno de Desarrollo: Visual Studio Code, Docker y Git.
+
+4.4 Arquitectura
+El sistema sigue un patrón arquitectónico MVC (Modelo-Vista-Controlador). La lógica reside en el servidor web (Laravel), que actúa como puente entre el usuario y la infraestructura de juego.
+La comunicación se divide en dos flujos web:
+1. Saliente (Web -> Server): Envío de configuraciones JSON y comandos RCON iniciados por acciones del usuario en la interfaz.
+2. Entrante (Server -> Web): Recepción de eventos vía Webhooks que la aplicación web procesa para actualizar el ranking y cerrar las lobbies en la base de datos.
