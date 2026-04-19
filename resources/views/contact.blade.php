@@ -8,29 +8,29 @@
         <h2 class="text-3xl font-black uppercase italic tracking-tighter text-white mb-8 border-b border-[#222222] pb-6">{{ __('Contacto') }}</h2>
         
         <p class="text-base text-slate-400 font-medium leading-relaxed mb-10">
-            Utiliza este formulario para enviarnos cualquier consulta, reporte de bug o solicitud de soporte.
+            {{ __('Utiliza este formulario para enviarnos cualquier consulta, reporte de bug o solicitud de soporte.') }}
         </p>
 
         <form id="contact-form" class="grid gap-6">
             <div class="grid md:grid-cols-2 gap-6">
                 <div>
-                    <label class="text-[10px] uppercase font-black tracking-[0.2em] text-[#ff5500] mb-2 block">{{ __('Nombre') }}</label>
-                    <input id="contact-name" type="text" class="w-full rounded-sm border border-[#222222] bg-[#121212] p-4 text-sm text-white placeholder-slate-700 focus:border-[#ff5500] outline-none transition" placeholder="Introduce tu nombre">
+                    <label class="text-[10px] uppercase font-black tracking-[0.2em] text-[#5b7cff] mb-2 block">{{ __('Nombre') }}</label>
+                    <input id="contact-name" type="text" class="w-full rounded-sm border border-[#222222] bg-[#121212] p-4 text-sm text-white placeholder-slate-700 focus:border-[#5b7cff] outline-none transition" placeholder="{{ __('Introduce tu nombre') }}">
                 </div>
                 <div>
-                    <label class="text-[10px] uppercase font-black tracking-[0.2em] text-[#ff5500] mb-2 block">{{ __('Email') }}</label>
-                    <input id="contact-email" type="email" class="w-full rounded-sm border border-[#222222] bg-[#121212] p-4 text-sm text-white placeholder-slate-700 focus:border-[#ff5500] outline-none transition" placeholder="tu@email.com">
+                    <label class="text-[10px] uppercase font-black tracking-[0.2em] text-[#5b7cff] mb-2 block">{{ __('Email') }}</label>
+                    <input id="contact-email" type="email" class="w-full rounded-sm border border-[#222222] bg-[#121212] p-4 text-sm text-white placeholder-slate-700 focus:border-[#5b7cff] outline-none transition" placeholder="tu@email.com">
                 </div>
             </div>
             <div>
-                <label class="text-[10px] uppercase font-black tracking-[0.2em] text-[#ff5500] mb-2 block">{{ __('Asunto / Incidencia') }}</label>
-                <input id="contact-subject" type="text" class="w-full rounded-sm border border-[#222222] bg-[#121212] p-4 text-sm text-white placeholder-slate-700 focus:border-[#ff5500] outline-none transition" placeholder="Resumen de la incidencia">
+                <label class="text-[10px] uppercase font-black tracking-[0.2em] text-[#5b7cff] mb-2 block">{{ __('Asunto / Incidencia') }}</label>
+                <input id="contact-subject" type="text" class="w-full rounded-sm border border-[#222222] bg-[#121212] p-4 text-sm text-white placeholder-slate-700 focus:border-[#5b7cff] outline-none transition" placeholder="{{ __('Resumen de la incidencia') }}">
             </div>
             <div>
-                <label class="text-[10px] uppercase font-black tracking-[0.2em] text-[#ff5500] mb-2 block">{{ __('Mensaje') }}</label>
-                <textarea id="contact-message" rows="5" class="w-full rounded-sm border border-[#222222] bg-[#121212] p-4 text-sm text-white placeholder-slate-700 focus:border-[#ff5500] outline-none transition" placeholder="Escribe tu mensaje aquí..."></textarea>
+                <label class="text-[10px] uppercase font-black tracking-[0.2em] text-[#5b7cff] mb-2 block">{{ __('Mensaje') }}</label>
+                <textarea id="contact-message" rows="5" class="w-full rounded-sm border border-[#222222] bg-[#121212] p-4 text-sm text-white placeholder-slate-700 focus:border-[#5b7cff] outline-none transition" placeholder="{{ __('Escribe tu mensaje aquí...') }}"></textarea>
             </div>
-            <button id="contact-submit" type="button" class="w-full rounded-sm bg-[#ff5500] py-4 text-sm font-black uppercase tracking-widest text-white hover:bg-[#ff7733] shadow-lg shadow-black/40 transition">
+            <button id="contact-submit" type="button" class="w-full rounded-sm bg-[#5b7cff] py-4 text-sm font-black uppercase tracking-widest text-white hover:bg-[#7c5cff] shadow-lg shadow-black/40 transition">
                 {{ __('Enviar Mensaje') }}
             </button>
         </form>
@@ -40,23 +40,23 @@
 <div id="contact-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-[#121212]/95 backdrop-blur-md px-6">
     <div class="w-full max-w-xl rounded-sm border border-[#222222] bg-[#1b1b1b] p-8 shadow-2xl">
         <div class="flex items-center justify-between border-b border-[#222222] pb-4 mb-6">
-            <h3 class="text-xl font-black uppercase italic tracking-tight text-white">Soporte Manual</h3>
+            <h3 class="text-xl font-black uppercase italic tracking-tight text-white">{{ __('Soporte Manual') }}</h3>
             <button id="contact-close" class="text-slate-500 hover:text-white transition">
                 <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
         </div>
         <p class="text-sm text-slate-400 font-medium leading-relaxed">
-            El sistema de contacto automatizado está en mantenimiento. Por favor, copia este reporte y envíalo vía Discord a <span class="font-bold text-[#ff5500]">betans</span>.
+            {{ __('El sistema de contacto automatizado está en mantenimiento. Por favor, copia este reporte y envíalo vía Discord a') }} <span class="font-bold text-[#5b7cff]">betans</span>.
         </p>
         <div class="mt-6 rounded-sm border border-[#222222] bg-[#121212] p-5">
             <pre id="contact-preview" class="whitespace-pre-wrap font-mono text-[11px] text-slate-300"></pre>
         </div>
         <div class="mt-8 flex flex-col sm:flex-row gap-3">
-            <button id="contact-copy" type="button" class="flex-1 rounded-sm bg-[#ff5500] px-6 py-3 text-[11px] font-black uppercase tracking-widest text-white hover:bg-[#ff7733] transition">
-                Copiar Reporte
+            <button id="contact-copy" type="button" class="flex-1 rounded-sm bg-[#5b7cff] px-6 py-3 text-[11px] font-black uppercase tracking-widest text-white hover:bg-[#7c5cff] transition">
+                {{ __('Copiar Reporte') }}
             </button>
             <button id="contact-close-alt" type="button" class="flex-1 rounded-sm border border-[#222222] bg-[#1b1b1b] px-6 py-3 text-[11px] font-black uppercase tracking-widest text-white hover:bg-[#222222] transition">
-                Volver
+                {{ __('Volver') }}
             </button>
         </div>
     </div>
@@ -75,7 +75,7 @@
         const subject = document.getElementById('contact-subject').value.trim();
         const message = document.getElementById('contact-message').value.trim();
 
-        return `--- REPORT AFTERRELOAD ---\nName: ${name || 'N/A'}\nEmail: ${email || 'N/A'}\nSubject: ${subject || 'N/A'}\n\nMessage:\n${message || 'N/A'}\n-------------------------`;
+        return `--- REPORT AFTERRELOAD ---\n{{ __('Nombre') }}: ${name || 'N/A'}\nEmail: ${email || 'N/A'}\n{{ __('Asunto') }}: ${subject || 'N/A'}\n\n{{ __('Mensaje') }}:\n${message || 'N/A'}\n-------------------------`;
     };
 
     const openModal = () => {
@@ -87,7 +87,7 @@
     const closeModal = () => {
         modal.classList.add('hidden');
         modal.classList.remove('flex');
-        copyButton.textContent = 'Copiar Reporte';
+        copyButton.textContent = '{{ __('Copiar Reporte') }}';
     };
 
     const fallbackCopy = (text) => {
@@ -135,9 +135,9 @@
             copied = fallbackCopy(text);
         }
 
-        copyButton.textContent = copied ? 'Copiado con éxito' : 'Error al copiar';
+        copyButton.textContent = copied ? '{{ __('Copiado con éxito') }}' : '{{ __('Error al copiar') }}';
         setTimeout(() => {
-            copyButton.textContent = 'Copiar Reporte';
+            copyButton.textContent = '{{ __('Copiar Reporte') }}';
         }, 2000);
     });
 })();

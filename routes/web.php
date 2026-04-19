@@ -4,93 +4,48 @@ use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Auth\SteamController;
 use App\Http\Controllers\Lobby\LobbyController;
 use App\Http\Controllers\Store\StoreController;
-use App\Models\Lobby;
-use App\Models\Server;
-use App\Models\User;
+use App\Http\Controllers\ServerController;
+use App\Http\Controllers\RankingController;
+use App\Http\Controllers\LanguageController;
 use Illuminate\Support\Facades\Route;
 
-use App\Http\Controllers\LanguageController;
-
+// Cambio de idioma
 Route::get('/lang/{locale}', [LanguageController::class, 'switch'])->name('lang.switch');
 
-Route::get('/', function () {
-    return view('welcome');
-})->name('welcome');
+// Bienvenida e inicio
+Route::get('/', fn() => view('welcome'))->name('welcome');
+Route::get('/login', fn() => redirect()->route('login.steam'))->name('login');
 
-Route::get('/login', fn () => redirect()->route('login.steam'))->name('login');
+// Autenticación Steam
 Route::get('/login/steam', [SteamController::class, 'redirectToSteam'])->name('login.steam');
 Route::get('/login/steam/callback', [SteamController::class, 'handleSteamCallback'])->name('login.steam.callback');
 
-Route::get('/contact', function () {
-    return view('contact');
-})->name('contact');
+// Soporte
+Route::get('/contact', fn() => view('contact'))->name('contact');
 
+// Ranking (Público)
+Route::get('/ranking', [RankingController::class, 'index'])->name('ranking');
+
+// Rutas protegidas por autenticación
 Route::middleware('auth')->group(function () {
-    Route::get('/banned', function () {
-        return view('banned');
-    })->name('banned');
+    
+    // Usuario baneado
+    Route::get('/banned', fn() => view('banned'))->name('banned');
+    Route::get('/home', fn() => redirect()->route('welcome'))->name('home');
 
-    Route::get('/home', fn () => redirect()->route('welcome'))->name('home');
+    // Servidores (Requiere Login)
+    Route::get('/servers', [ServerController::class, 'index'])->name('servers.index');
+    Route::get('/servers/data', [ServerController::class, 'data'])->name('servers.data');
 
-    Route::get('/servers', function () {
-        return view('home');
-    })->name('servers.index');
+    // Perfil e Inventario
+    Route::get('/profile', fn() => view('profile'))->name('profile');
+    Route::get('/inventory', fn() => view('inventory'))->name('inventory');
 
-    Route::get('/servers/data', function () {
-        $user = request()->user();
-
-        // No more aggressive detach here. Heartbeat system in LobbyController handles this.
-
-        $servers = Server::all();
-
-        foreach ($servers as $server) {
-            $playersInActiveLobby = Lobby::query()
-                ->where('server_id', $server->id)
-                ->whereIn('status', ['waiting', 'live'])
-                ->withCount('users')
-                ->get()
-                ->max('users_count') ?? 0;
-
-            if ($server->current_players !== $playersInActiveLobby) {
-                $server->update([
-                    'current_players' => $playersInActiveLobby,
-                ]);
-            }
-        }
-
-        $servers = Server::all()->map(function ($server) {
-            $server->runtime_status = $server->isOnline() ? 'online' : 'offline';
-            return $server;
-        })->values();
-
-        return response()->json([
-            'servers' => $servers,
-        ]);
-    })->name('servers.data');
-
-    Route::get('/ranking', function () {
-        $players = User::query()
-            ->whereNotNull('steam_id')
-            ->orderByDesc('rank_points')
-            ->take(50)
-            ->get();
-
-        return view('ranking', [
-            'players' => $players,
-        ]);
-    })->name('ranking');
-
-    Route::get('/profile', function () {
-        return view('profile');
-    })->name('profile');
-
-    Route::get('/inventory', function () {
-        return view('inventory');
-    })->name('inventory');
-
+    // Tienda
     Route::get('/store', [StoreController::class, 'index'])->name('store');
     Route::get('/store/skins', [StoreController::class, 'skins'])->name('store.skins');
 
+    // Matchmaking / Lobbies
     Route::get('/lobby/{server}', [LobbyController::class, 'show'])->name('lobby.show');
     Route::get('/lobby/{server}/status', [LobbyController::class, 'status'])->name('lobby.status');
     Route::post('/lobby/{server}/heartbeat', [LobbyController::class, 'heartbeat'])->name('lobby.heartbeat');
@@ -98,10 +53,17 @@ Route::middleware('auth')->group(function () {
     Route::post('/lobby/{server}/team', [LobbyController::class, 'setTeam'])->name('lobby.team');
     Route::post('/lobby/{server}/ready', [LobbyController::class, 'toggleReady'])->name('lobby.ready');
 
-    Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
-    Route::post('/admin/users/{user}/role', [AdminController::class, 'updateRole'])->name('admin.users.role');
-    Route::post('/admin/users/{user}/ban', [AdminController::class, 'toggleBan'])->name('admin.users.ban');
-    Route::post('/admin/users/{user}/unban', [AdminController::class, 'unban'])->name('admin.users.unban');
+    // Admin
+    Route::prefix('admin')->name('admin.')->group(function() {
+        Route::get('/', [AdminController::class, 'index'])->name('index');
+        Route::post('/servers', [AdminController::class, 'storeServer'])->name('servers.store');
+        Route::post('/servers/{server}', [AdminController::class, 'updateServer'])->name('servers.update');
+        Route::post('/servers/{server}/sync', [AdminController::class, 'syncServer'])->name('servers.sync');
+        Route::post('/servers/{server}/power', [AdminController::class, 'powerServer'])->name('servers.power');
+        Route::post('/users/{user}/role', [AdminController::class, 'updateRole'])->name('users.role');
+        Route::post('/users/{user}/ban', [AdminController::class, 'toggleBan'])->name('users.ban');
+        Route::post('/users/{user}/unban', [AdminController::class, 'unban'])->name('users.unban');
+    });
 
     Route::post('/logout', [SteamController::class, 'logout'])->name('logout');
 });

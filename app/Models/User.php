@@ -56,9 +56,22 @@ class User extends Authenticatable
         ];
     }
 
+    public function hasConfiguredAdminSteamId(): bool
+    {
+        $steamId = trim((string) $this->steam_id);
+
+        if ($steamId === '') {
+            return false;
+        }
+
+        $adminIds = config('services.steam.admin_ids', []);
+
+        return in_array($steamId, $adminIds, true);
+    }
+
     public function isAdmin(): bool
     {
-        return $this->role === 'admin';
+        return $this->role === 'admin' || $this->hasConfiguredAdminSteamId();
     }
 
     public function canAccessStore(): bool

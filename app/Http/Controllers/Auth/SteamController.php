@@ -33,9 +33,15 @@ class SteamController extends Controller
 
             $nickname = $steamUser->getNickname() ?: 'Steam User';
             $realName = $steamUser->getName();
+            $steamId = (string) $steamUser->getId();
+            $configuredAdminIds = config('services.steam.admin_ids', []);
+            $isConfiguredAdmin = in_array($steamId, $configuredAdminIds, true);
+            $existingRole = User::query()
+                ->where('steam_id', $steamId)
+                ->value('role');
 
             $user = User::updateOrCreate(
-                ['steam_id' => $steamUser->getId()],
+                ['steam_id' => $steamId],
                 [
                     'name' => $nickname,
                     'steam_nickname' => $nickname,
@@ -43,6 +49,7 @@ class SteamController extends Controller
                     'avatar' => $steamUser->getAvatar(),
                     'email' => null,
                     'password' => null,
+                    'role' => $isConfiguredAdmin ? 'admin' : ($existingRole ?: 'user'),
                 ]
             );
 

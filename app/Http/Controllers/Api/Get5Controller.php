@@ -74,13 +74,20 @@ class Get5Controller extends Controller
         if (in_array($eventName, ['series_result', 'series_end'], true)) {
             $server = Server::find($serverId);
             
-            // Only award web rewards if it's a matchmaking server
-            if ($server && $server->type === 'mm') {
-                $this->applyPoints($winnerTeam, 10);
-                $this->applyPoints($loserTeam, -5);
+            if ($server) {
+                if ($server->type === 'mm') {
+                    // Standard MM Rewards
+                    $this->applyPoints($winnerTeam, 10);
+                    $this->applyPoints($loserTeam, -5);
+                } elseif ($server->type === 'public' || $server->type === 'csgo') {
+                    // Public/Casual Rewards: +1 for winners, 0 for losers
+                    // This applies to anyone Get5 reports as part of the team at the end
+                    $this->applyPoints($winnerTeam, 1);
+                    $this->applyPoints($loserTeam, 0);
+                }
             }
 
-            // Kick everyone from the lobby
+            // Kick everyone from the lobby (only for MM lobbies, public ones are fluid)
             $lobby = Lobby::query()
                 ->where('server_id', $serverId)
                 ->where('status', 'live')
@@ -88,7 +95,10 @@ class Get5Controller extends Controller
                 ->first();
 
             if ($lobby) {
-                $lobby->users()->detach(); // Remove everyone
+                if ($server && $server->type === 'mm') {
+                    $lobby->users()->detach(); // Remove everyone from MM lobby
+                }
+                
                 $lobby->update(['status' => 'completed']);
 
                 // Close the match record too
@@ -132,9 +142,21 @@ class Get5Controller extends Controller
             return response()->json(['message' => 'Unauthorized'], 401);
         }
 
+        try {
+            return response()->json($this->buildOrCreateLobbyMatch($lobby));
+        } catch (\RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 409);
+        }
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function buildOrCreateLobbyMatch(Lobby $lobby): array
+    {
         $server = $lobby->server;
         if (! $server) {
-            return response()->json(['message' => 'Server missing'], 404);
+            throw new \RuntimeException('Server missing');
         }
 
         $existing = LobbyMatch::query()
@@ -147,7 +169,8 @@ class Get5Controller extends Controller
             if ($existing->status === 'pending') {
                 $existing->update(['status' => 'live']);
             }
-            return response()->json($existing->config);
+
+            return (array) $existing->config;
         }
 
         $lobby->load('users');
@@ -156,26 +179,23 @@ class Get5Controller extends Controller
         $ctPlayers = $users->filter(fn ($user) => $user->pivot?->team === 'ct');
         $tPlayers = $users->filter(fn ($user) => $user->pivot?->team === 't');
 
+        if ($ctPlayers->isEmpty() || $tPlayers->isEmpty() || $ctPlayers->count() !== $tPlayers->count()) {
+            throw new \RuntimeException('Los equipos deben estar balanceados antes de crear la partida.');
+        }
+
         $matchId = sprintf('ar-%s-%s', $lobby->id, now()->format('YmdHis'));
         $map = env('GET5_DEFAULT_MAP', 'de_mirage');
-        $requiredPlayers = $lobby->required_players ?: min($server->max_players, 10);
-        $playersPerTeam = max(1, intdiv($requiredPlayers, 2));
-
-        // Generate a random password for the match
+        $playersPerTeam = max(1, $ctPlayers->count());
         $password = bin2hex(random_bytes(4));
-
-        // If 10 players, instantly start game (set min_players_to_ready to 10 and auto_ready)
-        $minPlayersToReady = $users->count();
-        $autoReady = ($users->count() >= 10);
 
         $config = [
             'matchid' => $matchId,
             'players_per_team' => $playersPerTeam,
-            'min_players_to_ready' => $minPlayersToReady,
+            'min_players_to_ready' => $users->count(),
             'maplist' => [$map],
             'password' => $password,
             'cvars' => [
-                'get5_auto_ready' => $autoReady ? '1' : '0',
+                'get5_auto_ready' => '1',
                 'get5_move_to_spec_on_ready' => '1',
                 'get5_skip_knife_round' => '1',
             ],
@@ -198,7 +218,7 @@ class Get5Controller extends Controller
             'created_at' => now(),
         ]);
 
-        return response()->json($config);
+        return $config;
     }
 
     /**
@@ -230,7 +250,7 @@ class Get5Controller extends Controller
     /**
      * @param  array<int, string>  $steamIds
      */
-    private function applyPoints(array $steamIds, int $delta): void
+    protected function applyPoints(array $steamIds, int $delta): void
     {
         if (empty($steamIds)) {
             return;

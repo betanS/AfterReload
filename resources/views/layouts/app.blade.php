@@ -25,11 +25,37 @@
 
         <main class="flex-1 overflow-y-auto">
             @yield('content')
-            @include('partials.footer')
         </main>
     </div>
 
     <!-- Mobile Sidebar Overlay (Blur) -->
     <div id="sidebar-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 hidden lg:hidden"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('main-sidebar');
+            const toggle = document.getElementById('sidebar-toggle');
+            const close = document.getElementById('sidebar-close');
+            const overlay = document.getElementById('sidebar-overlay');
+
+            function openSidebar() {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+            }
+
+            function closeSidebar() {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+            }
+
+            if (toggle && sidebar && overlay) {
+                toggle.addEventListener('click', openSidebar);
+                overlay.addEventListener('click', closeSidebar);
+                if (close) {
+                    close.addEventListener('click', closeSidebar);
+                }
+            }
+        });
+    </script>
 </body>
 </html>

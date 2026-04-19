@@ -19,14 +19,3 @@ server/
 .bash_logout
 .profile
 .wget-hsts
-csgoserver/serverfiles/
-csgoserver/steamcmd/
-csgoserver/.local/
-csgoserver/.cache/
-
-# --- EXCEPTIONS ---
-!csgoserver/
-!csgoserver/lgsm/config-lgsm/csgoserver/*.cfg
-!csgoserver/serverfiles/csgo/cfg/*.cfg
-!csgoserver/serverfiles/csgo/addons/sourcemod/configs/*.cfg
-!csgoserver/serverfiles/csgo/addons/sourcemod/configs/*.ini

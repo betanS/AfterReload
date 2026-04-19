@@ -1,0 +1,1428 @@
+{
+  "tables": {
+    "cache_locks": {
+      "name": "cache_locks",
+      "comment": null,
+      "columns": {
+        "key": {
+          "name": "key",
+          "type": "varchar(255)",
+          "default": null,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "owner": {
+          "name": "owner",
+          "type": "varchar(255)",
+          "default": null,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "expiration": {
+          "name": "expiration",
+          "type": "int(11)",
+          "default": null,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "cache_locks_expiration_index": {
+          "name": "cache_locks_expiration_index",
+          "unique": false,
+          "columns": [
+            "expiration"
+          ],
+          "type": "btree"
+        },
+        "PRIMARY": {
+          "name": "PRIMARY",
+          "unique": false,
+          "columns": [
+            "key"
+          ],
+          "type": "btree"
+        }
+      },
+      "constraints": {
+        "PRIMARY": {
+          "type": "PRIMARY KEY",
+          "name": "PRIMARY",
+          "columnNames": [
+            "key"
+          ]
+        }
+      }
+    },
+    "migrations": {
+      "name": "migrations",
+      "comment": null,
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int(10) unsigned",
+          "default": null,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "migration": {
+          "name": "migration",
+          "type": "varchar(255)",
+          "default": null,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "batch": {
+          "name": "batch",
+          "type": "int(11)",
+          "default": null,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "PRIMARY": {
+          "name": "PRIMARY",
+          "unique": false,
+          "columns": [
+            "id"
+          ],
+          "type": "btree"
+        }
+      },
+      "constraints": {
+        "PRIMARY": {
+          "type": "PRIMARY KEY",
+          "name": "PRIMARY",
+          "columnNames": [
+            "id"
+          ]
+        }
+      }
+    },
+    "lobby_user": {
+      "name": "lobby_user",
+      "comment": null,
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigint(20) unsigned",
+          "default": null,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "lobby_id": {
+          "name": "lobby_id",
+          "type": "bigint(20) unsigned",
+          "default": null,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "bigint(20) unsigned",
+          "default": null,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "team": {
+          "name": "team",
+          "type": "varchar(8)",
+          "default": "NULL",
+          "check": null,
+          "comment": null,
+          "notNull": false
+        },
+        "is_ready": {
+          "name": "is_ready",
+          "type": "tinyint(1)",
+          "default": 0,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "default": "NULL",
+          "check": null,
+          "comment": null,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "default": "NULL",
+          "check": null,
+          "comment": null,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "lobby_user_lobby_id_team_index": {
+          "name": "lobby_user_lobby_id_team_index",
+          "unique": false,
+          "columns": [
+            "lobby_id",
+            "team"
+          ],
+          "type": "btree"
+        },
+        "lobby_user_user_id_foreign": {
+          "name": "lobby_user_user_id_foreign",
+          "unique": false,
+          "columns": [
+            "user_id"
+          ],
+          "type": "btree"
+        },
+        "PRIMARY": {
+          "name": "PRIMARY",
+          "unique": false,
+          "columns": [
+            "id"
+          ],
+          "type": "btree"
+        },
+        "lobby_user_lobby_id_user_id_unique": {
+          "name": "lobby_user_lobby_id_user_id_unique",
+          "unique": true,
+          "columns": [
+            "lobby_id",
+            "user_id"
+          ],
+          "type": "btree"
+        }
+      },
+      "constraints": {
+        "lobby_user_lobby_id_foreign": {
+          "type": "FOREIGN KEY",
+          "name": "lobby_user_lobby_id_foreign",
+          "columnNames": [
+            "lobby_id"
+          ],
+          "targetTableName": "lobbies",
+          "targetColumnNames": [
+            "id"
+          ],
+          "updateConstraint": "NO_ACTION",
+          "deleteConstraint": "NO_ACTION"
+        },
+        "lobby_user_lobby_id_user_id_unique": {
+          "type": "UNIQUE",
+          "name": "lobby_user_lobby_id_user_id_unique",
+          "columnNames": [
+            "lobby_id",
+            "user_id"
+          ]
+        },
+        "lobby_user_user_id_foreign": {
+          "type": "FOREIGN KEY",
+          "name": "lobby_user_user_id_foreign",
+          "columnNames": [
+            "user_id"
+          ],
+          "targetTableName": "users",
+          "targetColumnNames": [
+            "id"
+          ],
+          "updateConstraint": "NO_ACTION",
+          "deleteConstraint": "NO_ACTION"
+        },
+        "PRIMARY": {
+          "type": "PRIMARY KEY",
+          "name": "PRIMARY",
+          "columnNames": [
+            "id"
+          ]
+        }
+      }
+    },
+    "jobs": {
+      "name": "jobs",
+      "comment": null,
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigint(20) unsigned",
+          "default": null,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "queue": {
+          "name": "queue",
+          "type": "varchar(255)",
+          "default": null,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "payload": {
+          "name": "payload",
+          "type": "longtext",
+          "default": null,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "attempts": {
+          "name": "attempts",
+          "type": "tinyint(3) unsigned",
+          "default": null,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "reserved_at": {
+          "name": "reserved_at",
+          "type": "int(10) unsigned",
+          "default": "NULL",
+          "check": null,
+          "comment": null,
+          "notNull": false
+        },
+        "available_at": {
+          "name": "available_at",
+          "type": "int(10) unsigned",
+          "default": null,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "int(10) unsigned",
+          "default": null,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "jobs_queue_index": {
+          "name": "jobs_queue_index",
+          "unique": false,
+          "columns": [
+            "queue"
+          ],
+          "type": "btree"
+        },
+        "PRIMARY": {
+          "name": "PRIMARY",
+          "unique": false,
+          "columns": [
+            "id"
+          ],
+          "type": "btree"
+        }
+      },
+      "constraints": {
+        "PRIMARY": {
+          "type": "PRIMARY KEY",
+          "name": "PRIMARY",
+          "columnNames": [
+            "id"
+          ]
+        }
+      }
+    },
+    "match_results": {
+      "name": "match_results",
+      "comment": null,
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigint(20) unsigned",
+          "default": null,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "event_hash": {
+          "name": "event_hash",
+          "type": "varchar(64)",
+          "default": null,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "event_name": {
+          "name": "event_name",
+          "type": "varchar(255)",
+          "default": "NULL",
+          "check": null,
+          "comment": null,
+          "notNull": false
+        },
+        "match_id": {
+          "name": "match_id",
+          "type": "varchar(255)",
+          "default": "NULL",
+          "check": null,
+          "comment": null,
+          "notNull": false
+        },
+        "map_number": {
+          "name": "map_number",
+          "type": "int(10) unsigned",
+          "default": "NULL",
+          "check": null,
+          "comment": null,
+          "notNull": false
+        },
+        "server_id": {
+          "name": "server_id",
+          "type": "bigint(20) unsigned",
+          "default": "NULL",
+          "check": null,
+          "comment": null,
+          "notNull": false
+        },
+        "winner_team": {
+          "name": "winner_team",
+          "type": "varchar(255)",
+          "default": "NULL",
+          "check": null,
+          "comment": null,
+          "notNull": false
+        },
+        "team1_score": {
+          "name": "team1_score",
+          "type": "int(10) unsigned",
+          "default": "NULL",
+          "check": null,
+          "comment": null,
+          "notNull": false
+        },
+        "team2_score": {
+          "name": "team2_score",
+          "type": "int(10) unsigned",
+          "default": "NULL",
+          "check": null,
+          "comment": null,
+          "notNull": false
+        },
+        "payload": {
+          "name": "payload",
+          "type": "longtext",
+          "default": null,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "processed_at": {
+          "name": "processed_at",
+          "type": "timestamp",
+          "default": "NULL",
+          "check": null,
+          "comment": null,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "default": "NULL",
+          "check": null,
+          "comment": null,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "default": "NULL",
+          "check": null,
+          "comment": null,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "PRIMARY": {
+          "name": "PRIMARY",
+          "unique": false,
+          "columns": [
+            "id"
+          ],
+          "type": "btree"
+        },
+        "match_results_event_hash_unique": {
+          "name": "match_results_event_hash_unique",
+          "unique": true,
+          "columns": [
+            "event_hash"
+          ],
+          "type": "btree"
+        }
+      },
+      "constraints": {
+        "match_results_event_hash_unique": {
+          "type": "UNIQUE",
+          "name": "match_results_event_hash_unique",
+          "columnNames": [
+            "event_hash"
+          ]
+        },
+        "PRIMARY": {
+          "type": "PRIMARY KEY",
+          "name": "PRIMARY",
+          "columnNames": [
+            "id"
+          ]
+        },
+        "payload": {
+          "type": "CHECK",
+          "name": "payload",
+          "detail": "CHECK (json_valid(`payload`))"
+        }
+      }
+    },
+    "job_batches": {
+      "name": "job_batches",
+      "comment": null,
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar(255)",
+          "default": null,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "default": null,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "total_jobs": {
+          "name": "total_jobs",
+          "type": "int(11)",
+          "default": null,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "pending_jobs": {
+          "name": "pending_jobs",
+          "type": "int(11)",
+          "default": null,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "failed_jobs": {
+          "name": "failed_jobs",
+          "type": "int(11)",
+          "default": null,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "failed_job_ids": {
+          "name": "failed_job_ids",
+          "type": "longtext",
+          "default": null,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "options": {
+          "name": "options",
+          "type": "mediumtext",
+          "default": "NULL",
+          "check": null,
+          "comment": null,
+          "notNull": false
+        },
+        "cancelled_at": {
+          "name": "cancelled_at",
+          "type": "int(11)",
+          "default": "NULL",
+          "check": null,
+          "comment": null,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "int(11)",
+          "default": null,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "finished_at": {
+          "name": "finished_at",
+          "type": "int(11)",
+          "default": "NULL",
+          "check": null,
+          "comment": null,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "PRIMARY": {
+          "name": "PRIMARY",
+          "unique": false,
+          "columns": [
+            "id"
+          ],
+          "type": "btree"
+        }
+      },
+      "constraints": {
+        "PRIMARY": {
+          "type": "PRIMARY KEY",
+          "name": "PRIMARY",
+          "columnNames": [
+            "id"
+          ]
+        }
+      }
+    },
+    "users": {
+      "name": "users",
+      "comment": null,
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigint(20) unsigned",
+          "default": null,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "steam_id": {
+          "name": "steam_id",
+          "type": "varchar(255)",
+          "default": null,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "steam_nickname": {
+          "name": "steam_nickname",
+          "type": "varchar(255)",
+          "default": "NULL",
+          "check": null,
+          "comment": null,
+          "notNull": false
+        },
+        "steam_real_name": {
+          "name": "steam_real_name",
+          "type": "varchar(255)",
+          "default": "NULL",
+          "check": null,
+          "comment": null,
+          "notNull": false
+        },
+        "role": {
+          "name": "role",
+          "type": "varchar(32)",
+          "default": "'user'",
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "banned_at": {
+          "name": "banned_at",
+          "type": "timestamp",
+          "default": "NULL",
+          "check": null,
+          "comment": null,
+          "notNull": false
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "default": null,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "email": {
+          "name": "email",
+          "type": "varchar(255)",
+          "default": "NULL",
+          "check": null,
+          "comment": null,
+          "notNull": false
+        },
+        "avatar": {
+          "name": "avatar",
+          "type": "varchar(255)",
+          "default": "NULL",
+          "check": null,
+          "comment": null,
+          "notNull": false
+        },
+        "rank_points": {
+          "name": "rank_points",
+          "type": "int(10) unsigned",
+          "default": 0,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "blue_credits": {
+          "name": "blue_credits",
+          "type": "int(10) unsigned",
+          "default": 0,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "email_verified_at": {
+          "name": "email_verified_at",
+          "type": "timestamp",
+          "default": "NULL",
+          "check": null,
+          "comment": null,
+          "notNull": false
+        },
+        "password": {
+          "name": "password",
+          "type": "varchar(255)",
+          "default": "NULL",
+          "check": null,
+          "comment": null,
+          "notNull": false
+        },
+        "remember_token": {
+          "name": "remember_token",
+          "type": "varchar(100)",
+          "default": "NULL",
+          "check": null,
+          "comment": null,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "default": "NULL",
+          "check": null,
+          "comment": null,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "default": "NULL",
+          "check": null,
+          "comment": null,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "PRIMARY": {
+          "name": "PRIMARY",
+          "unique": false,
+          "columns": [
+            "id"
+          ],
+          "type": "btree"
+        },
+        "users_email_unique": {
+          "name": "users_email_unique",
+          "unique": true,
+          "columns": [
+            "email"
+          ],
+          "type": "btree"
+        },
+        "users_steam_id_unique": {
+          "name": "users_steam_id_unique",
+          "unique": true,
+          "columns": [
+            "steam_id"
+          ],
+          "type": "btree"
+        }
+      },
+      "constraints": {
+        "PRIMARY": {
+          "type": "PRIMARY KEY",
+          "name": "PRIMARY",
+          "columnNames": [
+            "id"
+          ]
+        },
+        "users_email_unique": {
+          "type": "UNIQUE",
+          "name": "users_email_unique",
+          "columnNames": [
+            "email"
+          ]
+        },
+        "users_steam_id_unique": {
+          "type": "UNIQUE",
+          "name": "users_steam_id_unique",
+          "columnNames": [
+            "steam_id"
+          ]
+        }
+      }
+    },
+    "lobbies": {
+      "name": "lobbies",
+      "comment": null,
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigint(20) unsigned",
+          "default": null,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "server_id": {
+          "name": "server_id",
+          "type": "bigint(20) unsigned",
+          "default": null,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "default": null,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "required_players": {
+          "name": "required_players",
+          "type": "int(10) unsigned",
+          "default": 10,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "varchar(255)",
+          "default": "'waiting'",
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "started_at": {
+          "name": "started_at",
+          "type": "timestamp",
+          "default": "NULL",
+          "check": null,
+          "comment": null,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "default": "NULL",
+          "check": null,
+          "comment": null,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "default": "NULL",
+          "check": null,
+          "comment": null,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "lobbies_server_id_foreign": {
+          "name": "lobbies_server_id_foreign",
+          "unique": false,
+          "columns": [
+            "server_id"
+          ],
+          "type": "btree"
+        },
+        "PRIMARY": {
+          "name": "PRIMARY",
+          "unique": false,
+          "columns": [
+            "id"
+          ],
+          "type": "btree"
+        }
+      },
+      "constraints": {
+        "lobbies_server_id_foreign": {
+          "type": "FOREIGN KEY",
+          "name": "lobbies_server_id_foreign",
+          "columnNames": [
+            "server_id"
+          ],
+          "targetTableName": "servers",
+          "targetColumnNames": [
+            "id"
+          ],
+          "updateConstraint": "NO_ACTION",
+          "deleteConstraint": "NO_ACTION"
+        },
+        "PRIMARY": {
+          "type": "PRIMARY KEY",
+          "name": "PRIMARY",
+          "columnNames": [
+            "id"
+          ]
+        }
+      }
+    },
+    "lobby_matches": {
+      "name": "lobby_matches",
+      "comment": null,
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigint(20) unsigned",
+          "default": null,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "lobby_id": {
+          "name": "lobby_id",
+          "type": "bigint(20) unsigned",
+          "default": null,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "server_id": {
+          "name": "server_id",
+          "type": "bigint(20) unsigned",
+          "default": null,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "match_id": {
+          "name": "match_id",
+          "type": "varchar(255)",
+          "default": null,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "config": {
+          "name": "config",
+          "type": "longtext",
+          "default": null,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "varchar(255)",
+          "default": "'pending'",
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "default": "current_timestamp()",
+          "check": null,
+          "comment": null,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "lobby_matches_lobby_id_foreign": {
+          "name": "lobby_matches_lobby_id_foreign",
+          "unique": false,
+          "columns": [
+            "lobby_id"
+          ],
+          "type": "btree"
+        },
+        "lobby_matches_server_id_foreign": {
+          "name": "lobby_matches_server_id_foreign",
+          "unique": false,
+          "columns": [
+            "server_id"
+          ],
+          "type": "btree"
+        },
+        "PRIMARY": {
+          "name": "PRIMARY",
+          "unique": false,
+          "columns": [
+            "id"
+          ],
+          "type": "btree"
+        },
+        "lobby_matches_match_id_unique": {
+          "name": "lobby_matches_match_id_unique",
+          "unique": true,
+          "columns": [
+            "match_id"
+          ],
+          "type": "btree"
+        }
+      },
+      "constraints": {
+        "lobby_matches_lobby_id_foreign": {
+          "type": "FOREIGN KEY",
+          "name": "lobby_matches_lobby_id_foreign",
+          "columnNames": [
+            "lobby_id"
+          ],
+          "targetTableName": "lobbies",
+          "targetColumnNames": [
+            "id"
+          ],
+          "updateConstraint": "NO_ACTION",
+          "deleteConstraint": "NO_ACTION"
+        },
+        "lobby_matches_match_id_unique": {
+          "type": "UNIQUE",
+          "name": "lobby_matches_match_id_unique",
+          "columnNames": [
+            "match_id"
+          ]
+        },
+        "lobby_matches_server_id_foreign": {
+          "type": "FOREIGN KEY",
+          "name": "lobby_matches_server_id_foreign",
+          "columnNames": [
+            "server_id"
+          ],
+          "targetTableName": "servers",
+          "targetColumnNames": [
+            "id"
+          ],
+          "updateConstraint": "NO_ACTION",
+          "deleteConstraint": "NO_ACTION"
+        },
+        "PRIMARY": {
+          "type": "PRIMARY KEY",
+          "name": "PRIMARY",
+          "columnNames": [
+            "id"
+          ]
+        },
+        "config": {
+          "type": "CHECK",
+          "name": "config",
+          "detail": "CHECK (json_valid(`config`))"
+        }
+      }
+    },
+    "password_reset_tokens": {
+      "name": "password_reset_tokens",
+      "comment": null,
+      "columns": {
+        "email": {
+          "name": "email",
+          "type": "varchar(255)",
+          "default": null,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "token": {
+          "name": "token",
+          "type": "varchar(255)",
+          "default": null,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "default": "NULL",
+          "check": null,
+          "comment": null,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "PRIMARY": {
+          "name": "PRIMARY",
+          "unique": false,
+          "columns": [
+            "email"
+          ],
+          "type": "btree"
+        }
+      },
+      "constraints": {
+        "PRIMARY": {
+          "type": "PRIMARY KEY",
+          "name": "PRIMARY",
+          "columnNames": [
+            "email"
+          ]
+        }
+      }
+    },
+    "sessions": {
+      "name": "sessions",
+      "comment": null,
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar(255)",
+          "default": null,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "bigint(20) unsigned",
+          "default": "NULL",
+          "check": null,
+          "comment": null,
+          "notNull": false
+        },
+        "ip_address": {
+          "name": "ip_address",
+          "type": "varchar(45)",
+          "default": "NULL",
+          "check": null,
+          "comment": null,
+          "notNull": false
+        },
+        "user_agent": {
+          "name": "user_agent",
+          "type": "text",
+          "default": "NULL",
+          "check": null,
+          "comment": null,
+          "notNull": false
+        },
+        "payload": {
+          "name": "payload",
+          "type": "longtext",
+          "default": null,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "last_activity": {
+          "name": "last_activity",
+          "type": "int(11)",
+          "default": null,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "sessions_last_activity_index": {
+          "name": "sessions_last_activity_index",
+          "unique": false,
+          "columns": [
+            "last_activity"
+          ],
+          "type": "btree"
+        },
+        "sessions_user_id_index": {
+          "name": "sessions_user_id_index",
+          "unique": false,
+          "columns": [
+            "user_id"
+          ],
+          "type": "btree"
+        },
+        "PRIMARY": {
+          "name": "PRIMARY",
+          "unique": false,
+          "columns": [
+            "id"
+          ],
+          "type": "btree"
+        }
+      },
+      "constraints": {
+        "PRIMARY": {
+          "type": "PRIMARY KEY",
+          "name": "PRIMARY",
+          "columnNames": [
+            "id"
+          ]
+        }
+      }
+    },
+    "cache": {
+      "name": "cache",
+      "comment": null,
+      "columns": {
+        "key": {
+          "name": "key",
+          "type": "varchar(255)",
+          "default": null,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "value": {
+          "name": "value",
+          "type": "mediumtext",
+          "default": null,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "expiration": {
+          "name": "expiration",
+          "type": "int(11)",
+          "default": null,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "cache_expiration_index": {
+          "name": "cache_expiration_index",
+          "unique": false,
+          "columns": [
+            "expiration"
+          ],
+          "type": "btree"
+        },
+        "PRIMARY": {
+          "name": "PRIMARY",
+          "unique": false,
+          "columns": [
+            "key"
+          ],
+          "type": "btree"
+        }
+      },
+      "constraints": {
+        "PRIMARY": {
+          "type": "PRIMARY KEY",
+          "name": "PRIMARY",
+          "columnNames": [
+            "key"
+          ]
+        }
+      }
+    },
+    "servers": {
+      "name": "servers",
+      "comment": null,
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigint(20) unsigned",
+          "default": null,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "default": null,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "ip": {
+          "name": "ip",
+          "type": "varchar(255)",
+          "default": null,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "port": {
+          "name": "port",
+          "type": "int(10) unsigned",
+          "default": null,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "rcon_password": {
+          "name": "rcon_password",
+          "type": "varchar(255)",
+          "default": "NULL",
+          "check": null,
+          "comment": null,
+          "notNull": false
+        },
+        "type": {
+          "name": "type",
+          "type": "varchar(20)",
+          "default": "'public'",
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "max_players": {
+          "name": "max_players",
+          "type": "int(10) unsigned",
+          "default": null,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "current_players": {
+          "name": "current_players",
+          "type": "int(10) unsigned",
+          "default": 0,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "default": "NULL",
+          "check": null,
+          "comment": null,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "default": "NULL",
+          "check": null,
+          "comment": null,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "PRIMARY": {
+          "name": "PRIMARY",
+          "unique": false,
+          "columns": [
+            "id"
+          ],
+          "type": "btree"
+        }
+      },
+      "constraints": {
+        "PRIMARY": {
+          "type": "PRIMARY KEY",
+          "name": "PRIMARY",
+          "columnNames": [
+            "id"
+          ]
+        }
+      }
+    },
+    "failed_jobs": {
+      "name": "failed_jobs",
+      "comment": null,
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigint(20) unsigned",
+          "default": null,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "uuid": {
+          "name": "uuid",
+          "type": "varchar(255)",
+          "default": null,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "connection": {
+          "name": "connection",
+          "type": "text",
+          "default": null,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "queue": {
+          "name": "queue",
+          "type": "text",
+          "default": null,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "payload": {
+          "name": "payload",
+          "type": "longtext",
+          "default": null,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "exception": {
+          "name": "exception",
+          "type": "longtext",
+          "default": null,
+          "check": null,
+          "comment": null,
+          "notNull": true
+        },
+        "failed_at": {
+          "name": "failed_at",
+          "type": "timestamp",
+          "default": "current_timestamp()",
+          "check": null,
+          "comment": null,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "PRIMARY": {
+          "name": "PRIMARY",
+          "unique": false,
+          "columns": [
+            "id"
+          ],
+          "type": "btree"
+        },
+        "failed_jobs_uuid_unique": {
+          "name": "failed_jobs_uuid_unique",
+          "unique": true,
+          "columns": [
+            "uuid"
+          ],
+          "type": "btree"
+        }
+      },
+      "constraints": {
+        "failed_jobs_uuid_unique": {
+          "type": "UNIQUE",
+          "name": "failed_jobs_uuid_unique",
+          "columnNames": [
+            "uuid"
+          ]
+        },
+        "PRIMARY": {
+          "type": "PRIMARY KEY",
+          "name": "PRIMARY",
+          "columnNames": [
+            "id"
+          ]
+        }
+      }
+    }
+  },
+  "enums": {},
+  "extensions": {}
+}

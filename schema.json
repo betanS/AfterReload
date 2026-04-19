@@ -1,0 +1,1307 @@
+{
+  "name": "afterreload",
+  "tables": [
+    {
+      "name": "cache_locks",
+      "type": "BASE TABLE",
+      "columns": [
+        {
+          "name": "key",
+          "type": "varchar(255)",
+          "nullable": false
+        },
+        {
+          "name": "owner",
+          "type": "varchar(255)",
+          "nullable": false
+        },
+        {
+          "name": "expiration",
+          "type": "int(11)",
+          "nullable": false
+        }
+      ],
+      "indexes": [
+        {
+          "name": "cache_locks_expiration_index",
+          "def": "KEY cache_locks_expiration_index (expiration) USING BTREE",
+          "table": "cache_locks",
+          "columns": [
+            "expiration"
+          ]
+        },
+        {
+          "name": "PRIMARY",
+          "def": "PRIMARY KEY (key) USING BTREE",
+          "table": "cache_locks",
+          "columns": [
+            "key"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "PRIMARY",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (key)",
+          "table": "cache_locks",
+          "columns": [
+            "key"
+          ]
+        }
+      ],
+      "def": "CREATE TABLE `cache_locks` (\n  `key` varchar(255) NOT NULL,\n  `owner` varchar(255) NOT NULL,\n  `expiration` int(11) NOT NULL,\n  PRIMARY KEY (`key`),\n  KEY `cache_locks_expiration_index` (`expiration`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+    },
+    {
+      "name": "migrations",
+      "type": "BASE TABLE",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int(10) unsigned",
+          "nullable": false,
+          "extra_def": "auto_increment"
+        },
+        {
+          "name": "migration",
+          "type": "varchar(255)",
+          "nullable": false
+        },
+        {
+          "name": "batch",
+          "type": "int(11)",
+          "nullable": false
+        }
+      ],
+      "indexes": [
+        {
+          "name": "PRIMARY",
+          "def": "PRIMARY KEY (id) USING BTREE",
+          "table": "migrations",
+          "columns": [
+            "id"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "PRIMARY",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "migrations",
+          "columns": [
+            "id"
+          ]
+        }
+      ],
+      "def": "CREATE TABLE `migrations` (\n  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,\n  `migration` varchar(255) NOT NULL,\n  `batch` int(11) NOT NULL,\n  PRIMARY KEY (`id`)\n) ENGINE=InnoDB AUTO_INCREMENT=[Redacted by tbls] DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+    },
+    {
+      "name": "lobby_user",
+      "type": "BASE TABLE",
+      "columns": [
+        {
+          "name": "id",
+          "type": "bigint(20) unsigned",
+          "nullable": false,
+          "extra_def": "auto_increment"
+        },
+        {
+          "name": "lobby_id",
+          "type": "bigint(20) unsigned",
+          "nullable": false
+        },
+        {
+          "name": "user_id",
+          "type": "bigint(20) unsigned",
+          "nullable": false
+        },
+        {
+          "name": "team",
+          "type": "varchar(8)",
+          "nullable": true,
+          "default": "NULL"
+        },
+        {
+          "name": "is_ready",
+          "type": "tinyint(1)",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp",
+          "nullable": true,
+          "default": "NULL"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp",
+          "nullable": true,
+          "default": "NULL"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "lobby_user_lobby_id_team_index",
+          "def": "KEY lobby_user_lobby_id_team_index (lobby_id, team) USING BTREE",
+          "table": "lobby_user",
+          "columns": [
+            "lobby_id",
+            "team"
+          ]
+        },
+        {
+          "name": "lobby_user_user_id_foreign",
+          "def": "KEY lobby_user_user_id_foreign (user_id) USING BTREE",
+          "table": "lobby_user",
+          "columns": [
+            "user_id"
+          ]
+        },
+        {
+          "name": "PRIMARY",
+          "def": "PRIMARY KEY (id) USING BTREE",
+          "table": "lobby_user",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "lobby_user_lobby_id_user_id_unique",
+          "def": "UNIQUE KEY lobby_user_lobby_id_user_id_unique (lobby_id, user_id) USING BTREE",
+          "table": "lobby_user",
+          "columns": [
+            "lobby_id",
+            "user_id"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "lobby_user_lobby_id_foreign",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (lobby_id) REFERENCES lobbies (id)",
+          "table": "lobby_user",
+          "referenced_table": "lobbies",
+          "columns": [
+            "lobby_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "lobby_user_lobby_id_user_id_unique",
+          "type": "UNIQUE",
+          "def": "UNIQUE KEY lobby_user_lobby_id_user_id_unique (lobby_id, user_id)",
+          "table": "lobby_user",
+          "columns": [
+            "lobby_id",
+            "user_id"
+          ]
+        },
+        {
+          "name": "lobby_user_user_id_foreign",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (user_id) REFERENCES users (id)",
+          "table": "lobby_user",
+          "referenced_table": "users",
+          "columns": [
+            "user_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "PRIMARY",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "lobby_user",
+          "columns": [
+            "id"
+          ]
+        }
+      ],
+      "def": "CREATE TABLE `lobby_user` (\n  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,\n  `lobby_id` bigint(20) unsigned NOT NULL,\n  `user_id` bigint(20) unsigned NOT NULL,\n  `team` varchar(8) DEFAULT NULL,\n  `is_ready` tinyint(1) NOT NULL DEFAULT 0,\n  `created_at` timestamp NULL DEFAULT NULL,\n  `updated_at` timestamp NULL DEFAULT NULL,\n  PRIMARY KEY (`id`),\n  UNIQUE KEY `lobby_user_lobby_id_user_id_unique` (`lobby_id`,`user_id`),\n  KEY `lobby_user_user_id_foreign` (`user_id`),\n  KEY `lobby_user_lobby_id_team_index` (`lobby_id`,`team`),\n  CONSTRAINT `lobby_user_lobby_id_foreign` FOREIGN KEY (`lobby_id`) REFERENCES `lobbies` (`id`) ON DELETE CASCADE,\n  CONSTRAINT `lobby_user_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE\n) ENGINE=InnoDB AUTO_INCREMENT=[Redacted by tbls] DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+    },
+    {
+      "name": "jobs",
+      "type": "BASE TABLE",
+      "columns": [
+        {
+          "name": "id",
+          "type": "bigint(20) unsigned",
+          "nullable": false,
+          "extra_def": "auto_increment"
+        },
+        {
+          "name": "queue",
+          "type": "varchar(255)",
+          "nullable": false
+        },
+        {
+          "name": "payload",
+          "type": "longtext",
+          "nullable": false
+        },
+        {
+          "name": "attempts",
+          "type": "tinyint(3) unsigned",
+          "nullable": false
+        },
+        {
+          "name": "reserved_at",
+          "type": "int(10) unsigned",
+          "nullable": true,
+          "default": "NULL"
+        },
+        {
+          "name": "available_at",
+          "type": "int(10) unsigned",
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "int(10) unsigned",
+          "nullable": false
+        }
+      ],
+      "indexes": [
+        {
+          "name": "jobs_queue_index",
+          "def": "KEY jobs_queue_index (queue) USING BTREE",
+          "table": "jobs",
+          "columns": [
+            "queue"
+          ]
+        },
+        {
+          "name": "PRIMARY",
+          "def": "PRIMARY KEY (id) USING BTREE",
+          "table": "jobs",
+          "columns": [
+            "id"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "PRIMARY",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "jobs",
+          "columns": [
+            "id"
+          ]
+        }
+      ],
+      "def": "CREATE TABLE `jobs` (\n  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,\n  `queue` varchar(255) NOT NULL,\n  `payload` longtext NOT NULL,\n  `attempts` tinyint(3) unsigned NOT NULL,\n  `reserved_at` int(10) unsigned DEFAULT NULL,\n  `available_at` int(10) unsigned NOT NULL,\n  `created_at` int(10) unsigned NOT NULL,\n  PRIMARY KEY (`id`),\n  KEY `jobs_queue_index` (`queue`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+    },
+    {
+      "name": "match_results",
+      "type": "BASE TABLE",
+      "columns": [
+        {
+          "name": "id",
+          "type": "bigint(20) unsigned",
+          "nullable": false,
+          "extra_def": "auto_increment"
+        },
+        {
+          "name": "event_hash",
+          "type": "varchar(64)",
+          "nullable": false
+        },
+        {
+          "name": "event_name",
+          "type": "varchar(255)",
+          "nullable": true,
+          "default": "NULL"
+        },
+        {
+          "name": "match_id",
+          "type": "varchar(255)",
+          "nullable": true,
+          "default": "NULL"
+        },
+        {
+          "name": "map_number",
+          "type": "int(10) unsigned",
+          "nullable": true,
+          "default": "NULL"
+        },
+        {
+          "name": "server_id",
+          "type": "bigint(20) unsigned",
+          "nullable": true,
+          "default": "NULL"
+        },
+        {
+          "name": "winner_team",
+          "type": "varchar(255)",
+          "nullable": true,
+          "default": "NULL"
+        },
+        {
+          "name": "team1_score",
+          "type": "int(10) unsigned",
+          "nullable": true,
+          "default": "NULL"
+        },
+        {
+          "name": "team2_score",
+          "type": "int(10) unsigned",
+          "nullable": true,
+          "default": "NULL"
+        },
+        {
+          "name": "payload",
+          "type": "longtext",
+          "nullable": false
+        },
+        {
+          "name": "processed_at",
+          "type": "timestamp",
+          "nullable": true,
+          "default": "NULL"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp",
+          "nullable": true,
+          "default": "NULL"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp",
+          "nullable": true,
+          "default": "NULL"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "PRIMARY",
+          "def": "PRIMARY KEY (id) USING BTREE",
+          "table": "match_results",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "match_results_event_hash_unique",
+          "def": "UNIQUE KEY match_results_event_hash_unique (event_hash) USING BTREE",
+          "table": "match_results",
+          "columns": [
+            "event_hash"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "match_results_event_hash_unique",
+          "type": "UNIQUE",
+          "def": "UNIQUE KEY match_results_event_hash_unique (event_hash)",
+          "table": "match_results",
+          "columns": [
+            "event_hash"
+          ]
+        },
+        {
+          "name": "PRIMARY",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "match_results",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "payload",
+          "type": "CHECK",
+          "def": "CHECK (json_valid(`payload`))",
+          "table": "match_results"
+        }
+      ],
+      "def": "CREATE TABLE `match_results` (\n  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,\n  `event_hash` varchar(64) NOT NULL,\n  `event_name` varchar(255) DEFAULT NULL,\n  `match_id` varchar(255) DEFAULT NULL,\n  `map_number` int(10) unsigned DEFAULT NULL,\n  `server_id` bigint(20) unsigned DEFAULT NULL,\n  `winner_team` varchar(255) DEFAULT NULL,\n  `team1_score` int(10) unsigned DEFAULT NULL,\n  `team2_score` int(10) unsigned DEFAULT NULL,\n  `payload` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`payload`)),\n  `processed_at` timestamp NULL DEFAULT NULL,\n  `created_at` timestamp NULL DEFAULT NULL,\n  `updated_at` timestamp NULL DEFAULT NULL,\n  PRIMARY KEY (`id`),\n  UNIQUE KEY `match_results_event_hash_unique` (`event_hash`)\n) ENGINE=InnoDB AUTO_INCREMENT=[Redacted by tbls] DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+    },
+    {
+      "name": "job_batches",
+      "type": "BASE TABLE",
+      "columns": [
+        {
+          "name": "id",
+          "type": "varchar(255)",
+          "nullable": false
+        },
+        {
+          "name": "name",
+          "type": "varchar(255)",
+          "nullable": false
+        },
+        {
+          "name": "total_jobs",
+          "type": "int(11)",
+          "nullable": false
+        },
+        {
+          "name": "pending_jobs",
+          "type": "int(11)",
+          "nullable": false
+        },
+        {
+          "name": "failed_jobs",
+          "type": "int(11)",
+          "nullable": false
+        },
+        {
+          "name": "failed_job_ids",
+          "type": "longtext",
+          "nullable": false
+        },
+        {
+          "name": "options",
+          "type": "mediumtext",
+          "nullable": true,
+          "default": "NULL"
+        },
+        {
+          "name": "cancelled_at",
+          "type": "int(11)",
+          "nullable": true,
+          "default": "NULL"
+        },
+        {
+          "name": "created_at",
+          "type": "int(11)",
+          "nullable": false
+        },
+        {
+          "name": "finished_at",
+          "type": "int(11)",
+          "nullable": true,
+          "default": "NULL"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "PRIMARY",
+          "def": "PRIMARY KEY (id) USING BTREE",
+          "table": "job_batches",
+          "columns": [
+            "id"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "PRIMARY",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "job_batches",
+          "columns": [
+            "id"
+          ]
+        }
+      ],
+      "def": "CREATE TABLE `job_batches` (\n  `id` varchar(255) NOT NULL,\n  `name` varchar(255) NOT NULL,\n  `total_jobs` int(11) NOT NULL,\n  `pending_jobs` int(11) NOT NULL,\n  `failed_jobs` int(11) NOT NULL,\n  `failed_job_ids` longtext NOT NULL,\n  `options` mediumtext DEFAULT NULL,\n  `cancelled_at` int(11) DEFAULT NULL,\n  `created_at` int(11) NOT NULL,\n  `finished_at` int(11) DEFAULT NULL,\n  PRIMARY KEY (`id`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+    },
+    {
+      "name": "users",
+      "type": "BASE TABLE",
+      "columns": [
+        {
+          "name": "id",
+          "type": "bigint(20) unsigned",
+          "nullable": false,
+          "extra_def": "auto_increment"
+        },
+        {
+          "name": "steam_id",
+          "type": "varchar(255)",
+          "nullable": false
+        },
+        {
+          "name": "steam_nickname",
+          "type": "varchar(255)",
+          "nullable": true,
+          "default": "NULL"
+        },
+        {
+          "name": "steam_real_name",
+          "type": "varchar(255)",
+          "nullable": true,
+          "default": "NULL"
+        },
+        {
+          "name": "role",
+          "type": "varchar(32)",
+          "nullable": false,
+          "default": "'user'"
+        },
+        {
+          "name": "banned_at",
+          "type": "timestamp",
+          "nullable": true,
+          "default": "NULL"
+        },
+        {
+          "name": "name",
+          "type": "varchar(255)",
+          "nullable": false
+        },
+        {
+          "name": "email",
+          "type": "varchar(255)",
+          "nullable": true,
+          "default": "NULL"
+        },
+        {
+          "name": "avatar",
+          "type": "varchar(255)",
+          "nullable": true,
+          "default": "NULL"
+        },
+        {
+          "name": "rank_points",
+          "type": "int(10) unsigned",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "blue_credits",
+          "type": "int(10) unsigned",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "email_verified_at",
+          "type": "timestamp",
+          "nullable": true,
+          "default": "NULL"
+        },
+        {
+          "name": "password",
+          "type": "varchar(255)",
+          "nullable": true,
+          "default": "NULL"
+        },
+        {
+          "name": "remember_token",
+          "type": "varchar(100)",
+          "nullable": true,
+          "default": "NULL"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp",
+          "nullable": true,
+          "default": "NULL"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp",
+          "nullable": true,
+          "default": "NULL"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "PRIMARY",
+          "def": "PRIMARY KEY (id) USING BTREE",
+          "table": "users",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "users_email_unique",
+          "def": "UNIQUE KEY users_email_unique (email) USING BTREE",
+          "table": "users",
+          "columns": [
+            "email"
+          ]
+        },
+        {
+          "name": "users_steam_id_unique",
+          "def": "UNIQUE KEY users_steam_id_unique (steam_id) USING BTREE",
+          "table": "users",
+          "columns": [
+            "steam_id"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "PRIMARY",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "users",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "users_email_unique",
+          "type": "UNIQUE",
+          "def": "UNIQUE KEY users_email_unique (email)",
+          "table": "users",
+          "columns": [
+            "email"
+          ]
+        },
+        {
+          "name": "users_steam_id_unique",
+          "type": "UNIQUE",
+          "def": "UNIQUE KEY users_steam_id_unique (steam_id)",
+          "table": "users",
+          "columns": [
+            "steam_id"
+          ]
+        }
+      ],
+      "def": "CREATE TABLE `users` (\n  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,\n  `steam_id` varchar(255) NOT NULL,\n  `steam_nickname` varchar(255) DEFAULT NULL,\n  `steam_real_name` varchar(255) DEFAULT NULL,\n  `role` varchar(32) NOT NULL DEFAULT 'user',\n  `banned_at` timestamp NULL DEFAULT NULL,\n  `name` varchar(255) NOT NULL,\n  `email` varchar(255) DEFAULT NULL,\n  `avatar` varchar(255) DEFAULT NULL,\n  `rank_points` int(10) unsigned NOT NULL DEFAULT 0,\n  `blue_credits` int(10) unsigned NOT NULL DEFAULT 0,\n  `email_verified_at` timestamp NULL DEFAULT NULL,\n  `password` varchar(255) DEFAULT NULL,\n  `remember_token` varchar(100) DEFAULT NULL,\n  `created_at` timestamp NULL DEFAULT NULL,\n  `updated_at` timestamp NULL DEFAULT NULL,\n  PRIMARY KEY (`id`),\n  UNIQUE KEY `users_steam_id_unique` (`steam_id`),\n  UNIQUE KEY `users_email_unique` (`email`)\n) ENGINE=InnoDB AUTO_INCREMENT=[Redacted by tbls] DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+    },
+    {
+      "name": "lobbies",
+      "type": "BASE TABLE",
+      "columns": [
+        {
+          "name": "id",
+          "type": "bigint(20) unsigned",
+          "nullable": false,
+          "extra_def": "auto_increment"
+        },
+        {
+          "name": "server_id",
+          "type": "bigint(20) unsigned",
+          "nullable": false
+        },
+        {
+          "name": "name",
+          "type": "varchar(255)",
+          "nullable": false
+        },
+        {
+          "name": "required_players",
+          "type": "int(10) unsigned",
+          "nullable": false,
+          "default": "10"
+        },
+        {
+          "name": "status",
+          "type": "varchar(255)",
+          "nullable": false,
+          "default": "'waiting'"
+        },
+        {
+          "name": "started_at",
+          "type": "timestamp",
+          "nullable": true,
+          "default": "NULL"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp",
+          "nullable": true,
+          "default": "NULL"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp",
+          "nullable": true,
+          "default": "NULL"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "lobbies_server_id_foreign",
+          "def": "KEY lobbies_server_id_foreign (server_id) USING BTREE",
+          "table": "lobbies",
+          "columns": [
+            "server_id"
+          ]
+        },
+        {
+          "name": "PRIMARY",
+          "def": "PRIMARY KEY (id) USING BTREE",
+          "table": "lobbies",
+          "columns": [
+            "id"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "lobbies_server_id_foreign",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (server_id) REFERENCES servers (id)",
+          "table": "lobbies",
+          "referenced_table": "servers",
+          "columns": [
+            "server_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "PRIMARY",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "lobbies",
+          "columns": [
+            "id"
+          ]
+        }
+      ],
+      "def": "CREATE TABLE `lobbies` (\n  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,\n  `server_id` bigint(20) unsigned NOT NULL,\n  `name` varchar(255) NOT NULL,\n  `required_players` int(10) unsigned NOT NULL DEFAULT 10,\n  `status` varchar(255) NOT NULL DEFAULT 'waiting',\n  `started_at` timestamp NULL DEFAULT NULL,\n  `created_at` timestamp NULL DEFAULT NULL,\n  `updated_at` timestamp NULL DEFAULT NULL,\n  PRIMARY KEY (`id`),\n  KEY `lobbies_server_id_foreign` (`server_id`),\n  CONSTRAINT `lobbies_server_id_foreign` FOREIGN KEY (`server_id`) REFERENCES `servers` (`id`) ON DELETE CASCADE\n) ENGINE=InnoDB AUTO_INCREMENT=[Redacted by tbls] DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+    },
+    {
+      "name": "lobby_matches",
+      "type": "BASE TABLE",
+      "columns": [
+        {
+          "name": "id",
+          "type": "bigint(20) unsigned",
+          "nullable": false,
+          "extra_def": "auto_increment"
+        },
+        {
+          "name": "lobby_id",
+          "type": "bigint(20) unsigned",
+          "nullable": false
+        },
+        {
+          "name": "server_id",
+          "type": "bigint(20) unsigned",
+          "nullable": false
+        },
+        {
+          "name": "match_id",
+          "type": "varchar(255)",
+          "nullable": false
+        },
+        {
+          "name": "config",
+          "type": "longtext",
+          "nullable": false
+        },
+        {
+          "name": "status",
+          "type": "varchar(255)",
+          "nullable": false,
+          "default": "'pending'"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp",
+          "nullable": false,
+          "default": "current_timestamp()"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "lobby_matches_lobby_id_foreign",
+          "def": "KEY lobby_matches_lobby_id_foreign (lobby_id) USING BTREE",
+          "table": "lobby_matches",
+          "columns": [
+            "lobby_id"
+          ]
+        },
+        {
+          "name": "lobby_matches_server_id_foreign",
+          "def": "KEY lobby_matches_server_id_foreign (server_id) USING BTREE",
+          "table": "lobby_matches",
+          "columns": [
+            "server_id"
+          ]
+        },
+        {
+          "name": "PRIMARY",
+          "def": "PRIMARY KEY (id) USING BTREE",
+          "table": "lobby_matches",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "lobby_matches_match_id_unique",
+          "def": "UNIQUE KEY lobby_matches_match_id_unique (match_id) USING BTREE",
+          "table": "lobby_matches",
+          "columns": [
+            "match_id"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "lobby_matches_lobby_id_foreign",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (lobby_id) REFERENCES lobbies (id)",
+          "table": "lobby_matches",
+          "referenced_table": "lobbies",
+          "columns": [
+            "lobby_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "lobby_matches_match_id_unique",
+          "type": "UNIQUE",
+          "def": "UNIQUE KEY lobby_matches_match_id_unique (match_id)",
+          "table": "lobby_matches",
+          "columns": [
+            "match_id"
+          ]
+        },
+        {
+          "name": "lobby_matches_server_id_foreign",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (server_id) REFERENCES servers (id)",
+          "table": "lobby_matches",
+          "referenced_table": "servers",
+          "columns": [
+            "server_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "PRIMARY",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "lobby_matches",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "config",
+          "type": "CHECK",
+          "def": "CHECK (json_valid(`config`))",
+          "table": "lobby_matches"
+        }
+      ],
+      "def": "CREATE TABLE `lobby_matches` (\n  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,\n  `lobby_id` bigint(20) unsigned NOT NULL,\n  `server_id` bigint(20) unsigned NOT NULL,\n  `match_id` varchar(255) NOT NULL,\n  `config` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`config`)),\n  `status` varchar(255) NOT NULL DEFAULT 'pending',\n  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),\n  PRIMARY KEY (`id`),\n  UNIQUE KEY `lobby_matches_match_id_unique` (`match_id`),\n  KEY `lobby_matches_lobby_id_foreign` (`lobby_id`),\n  KEY `lobby_matches_server_id_foreign` (`server_id`),\n  CONSTRAINT `lobby_matches_lobby_id_foreign` FOREIGN KEY (`lobby_id`) REFERENCES `lobbies` (`id`) ON DELETE CASCADE,\n  CONSTRAINT `lobby_matches_server_id_foreign` FOREIGN KEY (`server_id`) REFERENCES `servers` (`id`) ON DELETE CASCADE\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+    },
+    {
+      "name": "password_reset_tokens",
+      "type": "BASE TABLE",
+      "columns": [
+        {
+          "name": "email",
+          "type": "varchar(255)",
+          "nullable": false
+        },
+        {
+          "name": "token",
+          "type": "varchar(255)",
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp",
+          "nullable": true,
+          "default": "NULL"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "PRIMARY",
+          "def": "PRIMARY KEY (email) USING BTREE",
+          "table": "password_reset_tokens",
+          "columns": [
+            "email"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "PRIMARY",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (email)",
+          "table": "password_reset_tokens",
+          "columns": [
+            "email"
+          ]
+        }
+      ],
+      "def": "CREATE TABLE `password_reset_tokens` (\n  `email` varchar(255) NOT NULL,\n  `token` varchar(255) NOT NULL,\n  `created_at` timestamp NULL DEFAULT NULL,\n  PRIMARY KEY (`email`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+    },
+    {
+      "name": "sessions",
+      "type": "BASE TABLE",
+      "columns": [
+        {
+          "name": "id",
+          "type": "varchar(255)",
+          "nullable": false
+        },
+        {
+          "name": "user_id",
+          "type": "bigint(20) unsigned",
+          "nullable": true,
+          "default": "NULL"
+        },
+        {
+          "name": "ip_address",
+          "type": "varchar(45)",
+          "nullable": true,
+          "default": "NULL"
+        },
+        {
+          "name": "user_agent",
+          "type": "text",
+          "nullable": true,
+          "default": "NULL"
+        },
+        {
+          "name": "payload",
+          "type": "longtext",
+          "nullable": false
+        },
+        {
+          "name": "last_activity",
+          "type": "int(11)",
+          "nullable": false
+        }
+      ],
+      "indexes": [
+        {
+          "name": "sessions_last_activity_index",
+          "def": "KEY sessions_last_activity_index (last_activity) USING BTREE",
+          "table": "sessions",
+          "columns": [
+            "last_activity"
+          ]
+        },
+        {
+          "name": "sessions_user_id_index",
+          "def": "KEY sessions_user_id_index (user_id) USING BTREE",
+          "table": "sessions",
+          "columns": [
+            "user_id"
+          ]
+        },
+        {
+          "name": "PRIMARY",
+          "def": "PRIMARY KEY (id) USING BTREE",
+          "table": "sessions",
+          "columns": [
+            "id"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "PRIMARY",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "sessions",
+          "columns": [
+            "id"
+          ]
+        }
+      ],
+      "def": "CREATE TABLE `sessions` (\n  `id` varchar(255) NOT NULL,\n  `user_id` bigint(20) unsigned DEFAULT NULL,\n  `ip_address` varchar(45) DEFAULT NULL,\n  `user_agent` text DEFAULT NULL,\n  `payload` longtext NOT NULL,\n  `last_activity` int(11) NOT NULL,\n  PRIMARY KEY (`id`),\n  KEY `sessions_user_id_index` (`user_id`),\n  KEY `sessions_last_activity_index` (`last_activity`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+    },
+    {
+      "name": "cache",
+      "type": "BASE TABLE",
+      "columns": [
+        {
+          "name": "key",
+          "type": "varchar(255)",
+          "nullable": false
+        },
+        {
+          "name": "value",
+          "type": "mediumtext",
+          "nullable": false
+        },
+        {
+          "name": "expiration",
+          "type": "int(11)",
+          "nullable": false
+        }
+      ],
+      "indexes": [
+        {
+          "name": "cache_expiration_index",
+          "def": "KEY cache_expiration_index (expiration) USING BTREE",
+          "table": "cache",
+          "columns": [
+            "expiration"
+          ]
+        },
+        {
+          "name": "PRIMARY",
+          "def": "PRIMARY KEY (key) USING BTREE",
+          "table": "cache",
+          "columns": [
+            "key"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "PRIMARY",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (key)",
+          "table": "cache",
+          "columns": [
+            "key"
+          ]
+        }
+      ],
+      "def": "CREATE TABLE `cache` (\n  `key` varchar(255) NOT NULL,\n  `value` mediumtext NOT NULL,\n  `expiration` int(11) NOT NULL,\n  PRIMARY KEY (`key`),\n  KEY `cache_expiration_index` (`expiration`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+    },
+    {
+      "name": "servers",
+      "type": "BASE TABLE",
+      "columns": [
+        {
+          "name": "id",
+          "type": "bigint(20) unsigned",
+          "nullable": false,
+          "extra_def": "auto_increment"
+        },
+        {
+          "name": "name",
+          "type": "varchar(255)",
+          "nullable": false
+        },
+        {
+          "name": "ip",
+          "type": "varchar(255)",
+          "nullable": false
+        },
+        {
+          "name": "port",
+          "type": "int(10) unsigned",
+          "nullable": false
+        },
+        {
+          "name": "rcon_password",
+          "type": "varchar(255)",
+          "nullable": true,
+          "default": "NULL"
+        },
+        {
+          "name": "type",
+          "type": "varchar(20)",
+          "nullable": false,
+          "default": "'public'"
+        },
+        {
+          "name": "max_players",
+          "type": "int(10) unsigned",
+          "nullable": false
+        },
+        {
+          "name": "current_players",
+          "type": "int(10) unsigned",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp",
+          "nullable": true,
+          "default": "NULL"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp",
+          "nullable": true,
+          "default": "NULL"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "PRIMARY",
+          "def": "PRIMARY KEY (id) USING BTREE",
+          "table": "servers",
+          "columns": [
+            "id"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "PRIMARY",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "servers",
+          "columns": [
+            "id"
+          ]
+        }
+      ],
+      "def": "CREATE TABLE `servers` (\n  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,\n  `name` varchar(255) NOT NULL,\n  `ip` varchar(255) NOT NULL,\n  `port` int(10) unsigned NOT NULL,\n  `rcon_password` varchar(255) DEFAULT NULL,\n  `type` varchar(20) NOT NULL DEFAULT 'public',\n  `max_players` int(10) unsigned NOT NULL,\n  `current_players` int(10) unsigned NOT NULL DEFAULT 0,\n  `created_at` timestamp NULL DEFAULT NULL,\n  `updated_at` timestamp NULL DEFAULT NULL,\n  PRIMARY KEY (`id`)\n) ENGINE=InnoDB AUTO_INCREMENT=[Redacted by tbls] DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+    },
+    {
+      "name": "failed_jobs",
+      "type": "BASE TABLE",
+      "columns": [
+        {
+          "name": "id",
+          "type": "bigint(20) unsigned",
+          "nullable": false,
+          "extra_def": "auto_increment"
+        },
+        {
+          "name": "uuid",
+          "type": "varchar(255)",
+          "nullable": false
+        },
+        {
+          "name": "connection",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "queue",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "payload",
+          "type": "longtext",
+          "nullable": false
+        },
+        {
+          "name": "exception",
+          "type": "longtext",
+          "nullable": false
+        },
+        {
+          "name": "failed_at",
+          "type": "timestamp",
+          "nullable": false,
+          "default": "current_timestamp()"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "PRIMARY",
+          "def": "PRIMARY KEY (id) USING BTREE",
+          "table": "failed_jobs",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "failed_jobs_uuid_unique",
+          "def": "UNIQUE KEY failed_jobs_uuid_unique (uuid) USING BTREE",
+          "table": "failed_jobs",
+          "columns": [
+            "uuid"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "failed_jobs_uuid_unique",
+          "type": "UNIQUE",
+          "def": "UNIQUE KEY failed_jobs_uuid_unique (uuid)",
+          "table": "failed_jobs",
+          "columns": [
+            "uuid"
+          ]
+        },
+        {
+          "name": "PRIMARY",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "failed_jobs",
+          "columns": [
+            "id"
+          ]
+        }
+      ],
+      "def": "CREATE TABLE `failed_jobs` (\n  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,\n  `uuid` varchar(255) NOT NULL,\n  `connection` text NOT NULL,\n  `queue` text NOT NULL,\n  `payload` longtext NOT NULL,\n  `exception` longtext NOT NULL,\n  `failed_at` timestamp NOT NULL DEFAULT current_timestamp(),\n  PRIMARY KEY (`id`),\n  UNIQUE KEY `failed_jobs_uuid_unique` (`uuid`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+    }
+  ],
+  "relations": [
+    {
+      "table": "lobby_user",
+      "columns": [
+        "lobby_id"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "lobbies",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (lobby_id) REFERENCES lobbies (id)"
+    },
+    {
+      "table": "lobby_user",
+      "columns": [
+        "user_id"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "users",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (user_id) REFERENCES users (id)"
+    },
+    {
+      "table": "lobbies",
+      "columns": [
+        "server_id"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "servers",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (server_id) REFERENCES servers (id)"
+    },
+    {
+      "table": "lobby_matches",
+      "columns": [
+        "lobby_id"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "lobbies",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (lobby_id) REFERENCES lobbies (id)"
+    },
+    {
+      "table": "lobby_matches",
+      "columns": [
+        "server_id"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "servers",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (server_id) REFERENCES servers (id)"
+    }
+  ],
+  "driver": {
+    "name": "mysql",
+    "database_version": "10.11.14-MariaDB-0ubuntu0.24.04.1",
+    "meta": {
+      "dict": {
+        "Functions": "Stored procedures and functions"
+      }
+    }
+  }
+}

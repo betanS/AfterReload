@@ -1,78 +1,78 @@
 @extends('layouts.app')
 
-@section('title', 'Tienda')
+@section('title', __('TIENDA'))
 
 @section('content')
 <div class="max-w-6xl mx-auto p-8">
-    <div class="rounded-xl border border-slate-800 bg-slate-900/80 p-6">
-        <div class="flex flex-wrap items-start justify-between gap-4">
+    <div class="rounded-sm border border-[#222222] bg-[#1b1b1b] p-8 shadow-2xl">
+        <div class="flex flex-wrap items-start justify-between gap-4 border-b border-[#222222] pb-6 mb-8">
             <div>
-                <h2 class="text-2xl font-black mb-2">Tienda</h2>
-                <p class="text-sm text-slate-300">Usa los filtros para explorar categorias, o busca cualquier skin con el buscador.</p>
+                <h2 class="text-3xl font-black uppercase italic tracking-tighter text-white">{{ __('TIENDA') }}</h2>
+                <p class="text-xs font-bold uppercase tracking-widest text-slate-500 mt-2">{{ __('Usa los filtros para explorar categorias, o busca cualquier skin con el buscador.') }}</p>
             </div>
         </div>
 
-        <div class="mt-6 grid gap-4 md:grid-cols-3">
+        <div class="mt-6 grid gap-6 md:grid-cols-3">
             <div>
-                <label class="text-xs uppercase tracking-widest text-blue-300">Tipo de arma</label>
-                <select id="type-select" class="mt-2 w-full rounded-md border border-slate-800 bg-slate-950/70 p-3 text-sm text-slate-100">
+                <label class="text-[10px] uppercase font-black tracking-[0.2em] text-[#5b7cff] mb-3 block">{{ __('Tipo de arma') }}</label>
+                <select id="type-select" class="w-full rounded-sm border border-[#222222] bg-[#121212] p-4 text-sm font-bold text-white focus:border-[#5b7cff] transition">
                     @foreach($types as $type)
                         <option value="{{ $type }}">{{ $type }}</option>
                     @endforeach
                 </select>
             </div>
             <div>
-                <label class="text-xs uppercase tracking-widest text-blue-300">Arma</label>
-                <select id="weapon-select" class="mt-2 w-full rounded-md border border-slate-800 bg-slate-950/70 p-3 text-sm text-slate-100"></select>
+                <label class="text-[10px] uppercase font-black tracking-[0.2em] text-[#5b7cff] mb-3 block">{{ __('Arma') }}</label>
+                <select id="weapon-select" class="w-full rounded-sm border border-[#222222] bg-[#121212] p-4 text-sm font-bold text-white focus:border-[#5b7cff] transition"></select>
             </div>
             <div class="flex items-end">
-                <button id="load-skins" class="w-full rounded-md bg-blue-600 py-3 text-sm font-bold uppercase tracking-wide text-white hover:bg-blue-500">
-                    Ver skins
+                <button id="load-skins" class="w-full rounded-sm bg-[#5b7cff] py-4 text-xs font-black uppercase tracking-widest text-white hover:bg-[#7c5cff] shadow-lg shadow-black/20 transition">
+                    {{ __('Ver skins') }}
                 </button>
             </div>
         </div>
 
-        <div class="mt-6 flex flex-wrap items-end gap-4">
+        <div class="mt-8 flex flex-wrap items-end gap-6 border-t border-[#222222] pt-8">
             <div class="flex-1 min-w-[240px]">
-                <label class="text-xs uppercase tracking-widest text-blue-300">Buscar skin</label>
-                <input id="search-input" type="text" placeholder="Ej: Dragon Lore" class="mt-2 w-full rounded-md border border-slate-800 bg-slate-950/70 p-3 text-sm text-slate-100">
+                <label class="text-[10px] uppercase font-black tracking-[0.2em] text-slate-500 mb-3 block">{{ __('Buscar skin') }}</label>
+                <input id="search-input" type="text" placeholder="{{ __('Ej: Dragon Lore') }}" class="w-full rounded-sm border border-[#222222] bg-[#121212] p-4 text-sm font-bold text-white focus:border-[#5b7cff] transition">
             </div>
-            <button id="search-skins" class="rounded-md border border-blue-500 px-6 py-3 text-sm font-bold uppercase tracking-wide text-blue-200 hover:bg-blue-500/10">
-                Buscar
+            <button id="search-skins" class="rounded-sm border border-[#5b7cff] px-10 py-4 text-xs font-black uppercase tracking-widest text-white hover:bg-[#5b7cff] transition">
+                {{ __('Buscar') }}
             </button>
-            <button id="clear-search" class="rounded-md border border-slate-800 px-6 py-3 text-sm font-semibold text-slate-200 hover:border-slate-700">
-                Limpiar
+            <button id="clear-search" class="rounded-sm border border-[#222222] px-10 py-4 text-xs font-black uppercase tracking-widest text-slate-400 hover:border-white hover:text-white transition">
+                {{ __('Limpiar') }}
             </button>
         </div>
 
-        <div class="mt-6 flex items-center justify-between text-sm text-slate-400">
-            <span id="status">Selecciona filtros o busca una skin.</span>
-            <div class="flex items-center gap-2">
-                <button id="prev-page" class="rounded-md border border-slate-800 px-3 py-2 text-xs font-semibold text-slate-200 hover:border-slate-700" disabled>
-                    Anterior
+        <div class="mt-8 flex items-center justify-between text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">
+            <span id="status">{{ __('Selecciona filtros o busca una skin.') }}</span>
+            <div class="flex items-center gap-4">
+                <button id="prev-page" class="rounded-sm border border-[#222222] px-4 py-2 hover:border-white transition disabled:opacity-30 disabled:cursor-not-allowed" disabled>
+                    {{ __('Anterior') }}
                 </button>
-                <span id="page-indicator" class="text-xs">Pagina 1</span>
-                <button id="next-page" class="rounded-md border border-slate-800 px-3 py-2 text-xs font-semibold text-slate-200 hover:border-slate-700" disabled>
-                    Siguiente
+                <span id="page-indicator">{{ __('Pagina') }} 1</span>
+                <button id="next-page" class="rounded-sm border border-[#222222] px-4 py-2 hover:border-white transition disabled:opacity-30 disabled:cursor-not-allowed" disabled>
+                    {{ __('Siguiente') }}
                 </button>
             </div>
         </div>
 
-        <div id="skins-grid" class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4"></div>
+        <div id="skins-grid" class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4"></div>
     </div>
 </div>
 
-<div id="purchase-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/70 p-4">
-    <div class="w-full max-w-md rounded-xl border border-slate-800 bg-slate-900 p-6">
-        <h3 class="text-xl font-bold text-white">Confirmar compra</h3>
-        <p id="modal-skin-name" class="mt-2 text-sm text-slate-300"></p>
-        <p class="mt-4 text-xs text-slate-400">Esta es una plantilla, la compra real se conectara mas adelante.</p>
-        <div class="mt-6 flex gap-3">
-            <button id="confirm-buy" class="flex-1 rounded-md bg-blue-600 py-2 text-sm font-bold uppercase text-white hover:bg-blue-500">
-                Confirmar
+<div id="purchase-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 backdrop-blur-md p-4">
+    <div class="w-full max-w-md rounded-sm border border-[#222222] bg-[#1b1b1b] p-8 shadow-2xl">
+        <h3 class="text-2xl font-black uppercase italic tracking-tighter text-white">{{ __('Confirmar compra') }}</h3>
+        <p id="modal-skin-name" class="mt-4 text-sm font-bold text-[#5b7cff]"></p>
+        <p class="mt-4 text-[10px] uppercase tracking-widest font-bold text-slate-500 leading-relaxed">{{ __('Esta es una plantilla, la compra real se conectara mas adelante.') }}</p>
+        <div class="mt-8 flex gap-4">
+            <button id="confirm-buy" class="flex-1 rounded-sm bg-[#5b7cff] py-4 text-xs font-black uppercase tracking-widest text-white hover:bg-[#7c5cff] shadow-lg shadow-black/20 transition">
+                {{ __('Confirmar') }}
             </button>
-            <button id="close-modal" class="flex-1 rounded-md border border-slate-800 py-2 text-sm font-semibold text-slate-200 hover:border-slate-700">
-                Cancelar
+            <button id="close-modal" class="flex-1 rounded-sm border border-[#222222] py-4 text-xs font-black uppercase tracking-widest text-slate-400 hover:text-white transition">
+                {{ __('Cancelar') }}
             </button>
         </div>
     </div>
@@ -110,20 +110,21 @@
 
     const renderCards = (items) => {
         if (!items.length) {
-            grid.innerHTML = '<div class="col-span-full text-slate-400">No hay skins para esta seleccion.</div>';
+            grid.innerHTML = `<div class="col-span-full text-slate-500 font-bold uppercase tracking-widest text-xs py-20 text-center border border-dashed border-[#222222] rounded-sm">{{ __('No hay skins para esta seleccion.') }}</div>`;
             return;
         }
 
         grid.innerHTML = items
             .map((item) => {
                 return `
-                    <div class="rounded-xl border border-slate-800 bg-slate-950/70 p-4">
-                        <div class="aspect-square overflow-hidden rounded-lg border border-slate-800 bg-slate-900">
-                            <img src="${item.image}" alt="${item.name}" class="h-full w-full object-cover" loading="lazy">
+                    <div class="rounded-sm border border-[#222222] bg-[#121212] p-5 group hover:border-[#5b7cff]/40 transition shadow-lg shadow-black/10">
+                        <div class="aspect-square overflow-hidden rounded-sm border border-[#222222] bg-[#1b1b1b] relative">
+                            <img src="${item.image}" alt="${item.name}" class="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500" loading="lazy">
+                            <div class="absolute inset-0 bg-gradient-to-t from-[#1b1b1b] to-transparent opacity-40"></div>
                         </div>
-                        <p class="mt-3 text-sm font-semibold text-slate-100">${item.name}</p>
-                        <button data-skin="${item.name}" class="mt-3 w-full rounded-md bg-blue-600 py-2 text-xs font-bold uppercase text-white hover:bg-blue-500">
-                            Comprar
+                        <p class="mt-4 text-xs font-black text-white uppercase tracking-tighter italic">${item.name}</p>
+                        <button data-skin="${item.name}" class="mt-4 w-full rounded-sm bg-[#5b7cff] py-3 text-[10px] font-black uppercase tracking-widest text-white hover:bg-[#7c5cff] transition shadow-lg shadow-black/20">
+                            {{ __('Comprar') }}
                         </button>
                     </div>
                 `;
@@ -132,7 +133,7 @@
     };
 
     const updatePagination = () => {
-        pageIndicator.textContent = `Pagina ${currentPage}`;
+        pageIndicator.textContent = `{{ __('Pagina') }} ${currentPage}`;
         prevPage.disabled = currentPage <= 1;
         nextPage.disabled = !hasMore;
     };
@@ -142,24 +143,24 @@
         const weapon = weaponSelect.value;
         const search = searchInput.value.trim();
 
-        status.textContent = 'Cargando skins...';
+        status.textContent = "{{ __('Cargando skins...') }}";
         grid.innerHTML = '';
 
         try {
-            const response = await fetch(`{{ route('store.skins') }}?type=${encodeURIComponent(type)}&weapon=${encodeURIComponent(weapon)}&search=${encodeURIComponent(search)}&page=${currentPage}&per_page=16`);
+            const response = await fetch(\`{{ route('store.skins') }}?type=\${encodeURIComponent(type)}&weapon=\${encodeURIComponent(weapon)}&search=\${encodeURIComponent(search)}&page=\${currentPage}&per_page=16\`);
             const data = await response.json();
 
             if (!data.success) {
-                status.textContent = data.message || 'No se pudo cargar.';
+                status.textContent = data.message || "{{ __('No se pudo cargar.') }}";
                 return;
             }
 
             hasMore = data.meta.has_more;
-            status.textContent = `Mostrando ${data.data.length} skins`;
+            status.textContent = \`{{ __('Mostrando') }} \${data.data.length} {{ __('skins') }}\`;
             renderCards(data.data);
             updatePagination();
         } catch (error) {
-            status.textContent = 'Error al conectar con el catalogo local.';
+            status.textContent = "{{ __('Error al conectar con el catalogo local.') }}";
         }
     };
 

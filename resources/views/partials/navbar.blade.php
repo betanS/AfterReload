@@ -5,7 +5,7 @@
             <a href="{{ route('welcome') }}" class="flex items-center gap-3">
                 <img src="{{ asset('branding/minilogoWithBg.png') }}" alt="AfterReload" class="h-10 w-10 rounded-sm">
                 <div class="leading-tight hidden sm:block">
-                    <p class="text-[10px] uppercase tracking-[0.2em] text-[#ff5500]">AfterReload</p>
+                    <p class="text-[10px] uppercase tracking-[0.2em] text-[#5b7cff]">AfterReload</p>
                     <h1 class="text-lg font-black text-white">CSGO Matchmaking</h1>
                 </div>
             </a>
@@ -15,20 +15,20 @@
         <div class="hidden lg:flex items-center gap-6">
             @auth
                 <div class="flex items-center gap-4">
-                    <a href="{{ route('servers.index') }}" class="inline-flex items-center gap-2 text-sm font-bold text-slate-100 hover:text-[#ff5500] transition uppercase">
+                    <a href="{{ route('servers.index') }}" class="inline-flex items-center gap-2 text-sm font-bold text-slate-100 hover:text-[#5b7cff] transition uppercase">
                         <img src="{{ asset('icons/home.svg') }}" alt="Home" class="h-4 w-4 opacity-70">
                         SERVIDORES
                     </a>
-                    <a href="{{ route('ranking') }}" class="inline-flex items-center gap-2 text-sm font-bold text-slate-100 hover:text-[#ff5500] transition uppercase">
+                    <a href="{{ route('ranking') }}" class="inline-flex items-center gap-2 text-sm font-bold text-slate-100 hover:text-[#5b7cff] transition uppercase">
                         <img src="{{ asset('icons/ranking.svg') }}" alt="Ranking" class="h-4 w-4 opacity-70">
                         RANKING
                     </a>
                     @if(auth()->user()->isAdmin())
-                        <a href="{{ route('store') }}" class="inline-flex items-center gap-2 text-sm font-bold text-slate-100 hover:text-[#ff5500] transition uppercase">
+                        <a href="{{ route('store') }}" class="inline-flex items-center gap-2 text-sm font-bold text-slate-100 hover:text-[#5b7cff] transition uppercase">
                             <img src="{{ asset('icons/store.svg') }}" alt="Tienda" class="h-4 w-4 opacity-70">
                             TIENDA
                         </a>
-                        <a href="{{ route('admin.index') }}" class="inline-flex items-center gap-2 text-sm font-bold text-[#ff5500] hover:text-[#ff7733] transition uppercase">
+                        <a href="{{ route('admin.index') }}" class="inline-flex items-center gap-2 text-sm font-bold text-[#5b7cff] hover:text-[#7c5cff] transition uppercase">
                             <img src="{{ asset('icons/admin.svg') }}" alt="Admin" class="h-4 w-4">
                             ADMIN
                         </a>
@@ -51,9 +51,9 @@
                     <div class="relative">
                         <details class="group">
                             <summary class="flex cursor-pointer list-none items-center gap-3 rounded-sm border border-[#222222] bg-[#1b1b1b] px-3 py-1.5 text-sm font-semibold text-slate-100 hover:border-[#333333] transition">
-                                <img src="{{ auth()->user()->avatar }}" class="h-7 w-7 rounded-sm border border-[#ff5500]/60" alt="Avatar">
+                                <img src="{{ auth()->user()->avatar }}" class="h-7 w-7 rounded-sm border border-[#5b7cff]/60" alt="Avatar">
                                 <span>{{ auth()->user()->steam_nickname ?? auth()->user()->name }}</span>
-                                <svg class="h-4 w-4 text-[#ff5500] transition group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                                <svg class="h-4 w-4 text-[#5b7cff] transition group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                             </summary>
                             <div class="absolute right-0 mt-2 w-52 rounded-sm border border-[#222222] bg-[#1b1b1b] shadow-2xl z-50 p-1">
                                 <a href="{{ route('profile') }}" class="block rounded-sm px-3 py-2 text-sm text-slate-200 hover:bg-[#222222] transition">Mi Perfil</a>
@@ -68,7 +68,7 @@
                     </div>
                 </div>
             @else
-                <a href="{{ route('login.steam') }}" class="rounded-sm bg-[#ff5500] px-6 py-2.5 text-sm font-bold uppercase tracking-widest text-white transition hover:bg-[#ff7733] shadow-lg shadow-black/50">
+                <a href="{{ route('login.steam') }}" class="rounded-sm bg-[#5b7cff] px-6 py-2.5 text-sm font-bold uppercase tracking-widest text-white transition hover:bg-[#7c5cff] shadow-lg shadow-black/50">
                     Iniciar con Steam
                 </a>
             @endauth
@@ -78,7 +78,7 @@
         <div class="lg:hidden flex items-center gap-3">
             @auth
                 <div class="flex items-center gap-2 rounded-sm border border-[#222222] bg-[#1b1b1b] px-2 py-1 text-[10px]">
-                    <span class="font-bold text-[#ff5500]">{{ auth()->user()->rank_points }} RP</span>
+                    <span class="font-bold text-[#5b7cff]">{{ auth()->user()->rank_points }} RP</span>
                 </div>
             @endauth
             
@@ -96,7 +96,7 @@
         @auth
             <div class="flex flex-col gap-6">
                 <div class="flex items-center gap-4 border-b border-[#222222] pb-6">
-                    <img src="{{ auth()->user()->avatar }}" class="h-14 w-14 rounded-sm border-2 border-[#ff5500]" alt="Avatar">
+                    <img src="{{ auth()->user()->avatar }}" class="h-14 w-14 rounded-sm border-2 border-[#5b7cff]" alt="Avatar">
                     <div>
                         <p class="text-xl font-bold text-white">{{ auth()->user()->steam_nickname ?? auth()->user()->name }}</p>
                         <p class="text-xs text-slate-500 uppercase tracking-widest">{{ auth()->user()->role }}</p>
@@ -106,7 +106,7 @@
                 <div class="grid grid-cols-2 gap-3">
                     <div class="rounded-sm border border-[#222222] bg-[#1b1b1b] p-4">
                         <p class="text-[10px] text-slate-500 uppercase font-bold mb-1">Puntos</p>
-                        <p class="text-xl font-black text-[#ff5500]">{{ auth()->user()->rank_points }}</p>
+                        <p class="text-xl font-black text-[#5b7cff]">{{ auth()->user()->rank_points }}</p>
                     </div>
                     <div class="rounded-sm border border-[#222222] bg-[#1b1b1b] p-4">
                         <p class="text-[10px] text-slate-500 uppercase font-bold mb-1">Créditos</p>
@@ -128,7 +128,7 @@
                             <img src="{{ asset('icons/store.svg') }}" class="h-5 w-5 opacity-70">
                             TIENDA
                         </a>
-                        <a href="{{ route('admin.index') }}" class="flex items-center gap-4 rounded-sm border border-[#222222] bg-[#1b1b1b] px-5 py-4 font-bold text-[#ff5500] hover:bg-[#222222]">
+                        <a href="{{ route('admin.index') }}" class="flex items-center gap-4 rounded-sm border border-[#222222] bg-[#1b1b1b] px-5 py-4 font-bold text-[#5b7cff] hover:bg-[#222222]">
                             <img src="{{ asset('icons/admin.svg') }}" class="h-5 w-5 opacity-70">
                             ADMIN PANEL
                         </a>
@@ -147,7 +147,7 @@
                 </div>
             </div>
         @else
-            <a href="{{ route('login.steam') }}" class="block w-full rounded-sm bg-[#ff5500] py-5 text-center text-lg font-black uppercase tracking-widest text-white">
+            <a href="{{ route('login.steam') }}" class="block w-full rounded-sm bg-[#5b7cff] py-5 text-center text-lg font-black uppercase tracking-widest text-white">
                 INICIAR CON STEAM
             </a>
         @endauth

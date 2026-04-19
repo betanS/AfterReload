@@ -21,5 +21,11 @@ class AppServiceProvider extends ServiceProvider
             SocialiteWasCalled::class,
             [SteamExtendSocialite::class, 'handle']
         );
+
+        // Global Elo average for topbar
+        \Illuminate\Support\Facades\View::composer('*', function ($view) {
+            $globalEloAvg = (int) \App\Models\User::avg('rank_points') ?? 0;
+            $view->with('globalEloAvg', $globalEloAvg);
+        });
     }
 }

@@ -40,6 +40,18 @@ return [
         'client_secret' => env('STEAM_CLIENT_SECRET'),
         'redirect' => env('STEAM_REDIRECT_URL'),
         'allowed_hosts' => array_filter(array_map('trim', explode(',', (string) env('STEAM_ALLOWED_HOSTS', '')))),
+        'admin_ids' => array_values(array_filter(array_map('trim', explode(',', (string) env(
+            'ADMIN_STEAM_IDS',
+            (string) env('ADMIN_STEAM_ID', '')
+        ))))),
+    ],
+
+    'pterodactyl' => [
+        'panel_url' => env('PTERODACTYL_URL'),
+        'client_api_key' => env('PTERODACTYL_CLIENT_API_KEY'),
+        'application_api_key' => env('PTERODACTYL_APPLICATION_API_KEY'),
+        'account_email' => env('PTERODACTYL_ACCOUNT_EMAIL'),
+        'timeout' => env('PTERODACTYL_TIMEOUT', 5),
     ],
 
 ];
