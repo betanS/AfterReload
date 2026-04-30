@@ -36,7 +36,11 @@
                                     <span class="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded-sm border border-[#5b7cff]/30 text-[#5b7cff] bg-[#5b7cff]/5 text-center">Matchmaking</span>
                                 @endif
                             </div>
-                            <p class="text-[10px] text-slate-500 font-bold font-mono">IP: {{ $server['ip'] }}:{{ $server['port'] }}</p>
+                            @if (!empty($server['ip']) && !empty($server['port']))
+                                <p class="text-[10px] text-slate-500 font-bold font-mono">IP: {{ $server['ip'] }}:{{ $server['port'] }}</p>
+                            @else
+                                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-[0.18em]">{{ __('Acceso por lobby') }}</p>
+                            @endif
                         </div>
 
                         <div class="col-span-2 flex items-center justify-between md:justify-start mb-3 md:mb-0 border-t border-[#222222] pt-3 md:border-0 md:pt-0">
@@ -95,6 +99,9 @@
             const isUnlimited = server.type === 'public';
             const players = Number(server.current_players ?? 0);
             const maxPlayers = Number(server.max_players ?? 0);
+            const addressLine = server.ip && server.port
+                ? `<p class="text-[10px] text-slate-500 font-bold font-mono">IP: ${escapeHtml(server.ip)}:${escapeHtml(String(server.port))}</p>`
+                : `<p class="text-[10px] text-slate-500 font-bold uppercase tracking-[0.18em]">{{ __('Acceso por lobby') }}</p>`;
 
             return `
                 <div class="bg-[#1b1b1b] border border-[#222222] p-4 md:p-0 md:bg-transparent md:border-0 md:grid md:grid-cols-12 md:gap-4 md:items-center md:px-4 md:py-3 hover:bg-[#222222]/40 transition rounded-sm relative group">
@@ -105,7 +112,7 @@
                                 ? '<span class="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded-sm border border-emerald-500/30 text-emerald-400 bg-emerald-500/5">{{ __('Pública') }}</span>'
                                 : '<span class="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded-sm border border-[#5b7cff]/30 text-[#5b7cff] bg-[#5b7cff]/5 text-center">Matchmaking</span>'}
                         </div>
-                        <p class="text-[10px] text-slate-500 font-bold font-mono">IP: ${escapeHtml(server.ip ?? '')}:${escapeHtml(String(server.port ?? ''))}</p>
+                        ${addressLine}
                     </div>
 
                     <div class="col-span-2 flex items-center justify-between md:justify-start mb-3 md:mb-0 border-t border-[#222222] pt-3 md:border-0 md:pt-0">
@@ -157,6 +164,7 @@
         }
     };
 
+    refreshServers();
     window.setInterval(refreshServers, 5000);
 })();
 </script>

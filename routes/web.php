@@ -3,7 +3,6 @@
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Auth\SteamController;
 use App\Http\Controllers\Lobby\LobbyController;
-use App\Http\Controllers\Store\StoreController;
 use App\Http\Controllers\ServerController;
 use App\Http\Controllers\RankingController;
 use App\Http\Controllers\LanguageController;
@@ -41,10 +40,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', fn() => view('profile'))->name('profile');
     Route::get('/inventory', fn() => view('inventory'))->name('inventory');
 
-    // Tienda
-    Route::get('/store', [StoreController::class, 'index'])->name('store');
-    Route::get('/store/skins', [StoreController::class, 'skins'])->name('store.skins');
-
     // Matchmaking / Lobbies
     Route::get('/lobby/{server}', [LobbyController::class, 'show'])->name('lobby.show');
     Route::get('/lobby/{server}/status', [LobbyController::class, 'status'])->name('lobby.status');
@@ -57,6 +52,7 @@ Route::middleware('auth')->group(function () {
     Route::prefix('admin')->name('admin.')->group(function() {
         Route::get('/', [AdminController::class, 'index'])->name('index');
         Route::post('/servers', [AdminController::class, 'storeServer'])->name('servers.store');
+        Route::post('/servers/import', [AdminController::class, 'importServers'])->name('servers.import');
         Route::post('/servers/{server}', [AdminController::class, 'updateServer'])->name('servers.update');
         Route::post('/servers/{server}/sync', [AdminController::class, 'syncServer'])->name('servers.sync');
         Route::post('/servers/{server}/power', [AdminController::class, 'powerServer'])->name('servers.power');

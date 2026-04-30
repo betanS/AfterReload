@@ -54,4 +54,13 @@ return [
         'timeout' => env('PTERODACTYL_TIMEOUT', 5),
     ],
 
+    'csgoserver' => [
+        'lock_dir' => env('CSGOSERVER_LOCK_DIR', '/var/www/afterreload/csgoserver/lgsm/lock'),
+        'port_map' => [
+            27015 => 'csgoserver-started.lock',
+            27016 => 'csgoserver-wingman-started.lock',
+            27017 => 'mmserver-started.lock',
+        ],
+    ],
+
 ];

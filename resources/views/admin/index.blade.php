@@ -46,11 +46,19 @@
                     <h3 class="font-black uppercase tracking-widest text-white text-sm italic">{{ __('Servidores y Pterodactyl') }}</h3>
                     <p class="mt-2 text-xs uppercase tracking-[0.2em] text-slate-500">{{ __('La administración real vive en panel.afterreload; aquí solo queda el resumen operativo.') }}</p>
                 </div>
-                @if ($pterodactylConfigured && $pterodactylPanelUrl !== '')
-                    <a href="{{ $pterodactylPanelUrl }}" target="_blank" rel="noreferrer" class="inline-flex items-center justify-center rounded-sm border border-[#5b7cff] bg-[#5b7cff] px-4 py-3 text-[10px] font-black uppercase tracking-widest text-white transition hover:bg-[#7c5cff]">
-                        {{ __('Abrir panel.afterreload') }}
-                    </a>
-                @endif
+                <div class="flex flex-wrap gap-2">
+                    @if ($pterodactylConfigured && $pterodactylPanelUrl !== '')
+                        <form action="{{ route('admin.servers.import') }}" method="POST">
+                            @csrf
+                            <button type="submit" class="inline-flex items-center justify-center rounded-sm border border-emerald-500 bg-emerald-500/10 px-4 py-3 text-[10px] font-black uppercase tracking-widest text-emerald-300 transition hover:bg-emerald-500 hover:text-white">
+                                {{ __('Importar servers de Pterodactyl') }}
+                            </button>
+                        </form>
+                        <a href="{{ $pterodactylPanelUrl }}" target="_blank" rel="noreferrer" class="inline-flex items-center justify-center rounded-sm border border-[#5b7cff] bg-[#5b7cff] px-4 py-3 text-[10px] font-black uppercase tracking-widest text-white transition hover:bg-[#7c5cff]">
+                            {{ __('Abrir panel.afterreload') }}
+                        </a>
+                    @endif
+                </div>
             </div>
 
             <div class="grid gap-4 border-b border-[#222222] bg-[#161616] p-6 md:grid-cols-3">

@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Services\PterodactylService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\View\View;
 
 class AdminController extends Controller
@@ -128,6 +129,77 @@ class AdminController extends Controller
         }
 
         return back()->with('status', 'Servidor sincronizado con Pterodactyl.');
+    }
+
+    public function importServers(PterodactylService $pterodactyl): RedirectResponse
+    {
+        if (! $pterodactyl->hasApplicationApi()) {
+            return back()->with('status', 'Para importar necesitas PTERODACTYL_URL y PTERODACTYL_APPLICATION_API_KEY.');
+        }
+
+        try {
+            $remoteServers = $pterodactyl->listServers();
+        } catch (\Throwable $e) {
+            return back()->with('status', 'Error al importar desde Pterodactyl: ' . $e->getMessage());
+        }
+
+        $imported = 0;
+        $updated = 0;
+        $skipped = 0;
+
+        foreach ($remoteServers as $remote) {
+            $identifier = trim((string) Arr::get($remote, 'identifier', ''));
+            $name = trim((string) Arr::get($remote, 'name', ''));
+            $ip = Arr::get($remote, 'ip');
+            $port = Arr::get($remote, 'port');
+
+            if ($identifier === '' || $name === '' || ! is_string($ip) || $ip === '' || ! is_numeric($port)) {
+                $skipped++;
+                continue;
+            }
+
+            $status = Arr::get($remote, 'status');
+            $statusValue = is_string($status) && $status !== '' ? $status : null;
+
+            $server = Server::query()->where('pterodactyl_identifier', $identifier)->first();
+
+            if (! $server) {
+                $server = Server::query()->where('ip', $ip)->where('port', (int) $port)->first();
+            }
+
+            if ($server) {
+                $payload = [
+                    'name' => $name,
+                    'ip' => $ip,
+                    'port' => (int) $port,
+                    'type' => $server->type ?: 'mm',
+                    'max_players' => $server->max_players > 0 ? $server->max_players : 10,
+                    'pterodactyl_identifier' => $identifier,
+                    'pterodactyl_uuid' => Arr::get($remote, 'uuid'),
+                    'pterodactyl_status' => $statusValue,
+                    'pterodactyl_last_synced_at' => now(),
+                ];
+                $server->update($payload);
+                $updated++;
+            } else {
+                Server::query()->create([
+                    'name' => $name,
+                    'ip' => $ip,
+                    'port' => (int) $port,
+                    'type' => 'mm',
+                    'max_players' => 10,
+                    'current_players' => 0,
+                    'rcon_password' => null,
+                    'pterodactyl_identifier' => $identifier,
+                    'pterodactyl_uuid' => Arr::get($remote, 'uuid'),
+                    'pterodactyl_status' => $statusValue,
+                    'pterodactyl_last_synced_at' => now(),
+                ]);
+                $imported++;
+            }
+        }
+
+        return back()->with('status', "Import completado. Nuevos: {$imported}, actualizados: {$updated}, omitidos: {$skipped}.");
     }
 
     public function powerServer(Request $request, Server $server, PterodactylService $pterodactyl): RedirectResponse

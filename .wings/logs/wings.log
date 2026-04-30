@@ -1,0 +1,100 @@
+ INFO: [Apr 30 17:31:45.488] writing log files to disk path=/var/www/afterreload/.wings/logs/wings.log
+
+                     ____
+__ [34m[1mPterodactyl[0m _____/___/_______ _______ ______
+\_____\    \/\/    /   /       /  __   /   ___/
+   \___\          /   /   /   /  /_/  /___   /
+        \___/\___/___/___/___/___    /______/
+                            /_______/ [1mv1.12.1[0m
+
+Copyright © 2018 - 2026 Dane Everitt & Contributors
+
+Website:  https://pterodactyl.io
+ Source:  https://github.com/pterodactyl/wings
+License:  https://github.com/pterodactyl/wings/blob/develop/LICENSE
+
+This software is made available under the terms of the MIT license.
+The above copyright notice and this permission notice shall be included
+in all copies or substantial portions of the Software.
+
+[0m INFO: [Apr 30 17:31:45.488] loading configuration from file config_file=/var/www/afterreload/.wings/etc/config.yml
+ INFO: [Apr 30 17:31:45.488] configured wings with system timezone timezone=Etc/UTC
+FATAL: [Apr 30 17:31:45.489] failed to configure system directories for pterodactyl error=mkdir /run/wings: permission denied
+
+Stacktrace:
+mkdir /run/wings: permission denied
+github.com/pterodactyl/wings/cmd.rootCmdRun
+	github.com/pterodactyl/wings/cmd/root.go:111
+github.com/spf13/cobra.(*Command).execute
+	github.com/spf13/cobra@v1.9.1/command.go:1019
+github.com/spf13/cobra.(*Command).ExecuteC
+	github.com/spf13/cobra@v1.9.1/command.go:1148
+github.com/spf13/cobra.(*Command).Execute
+	github.com/spf13/cobra@v1.9.1/command.go:1071
+github.com/pterodactyl/wings/cmd.Execute
+	github.com/pterodactyl/wings/cmd/root.go:71
+main.main
+	github.com/pterodactyl/wings/wings.go:17
+runtime.main
+	runtime/proc.go:283
+runtime.goexit
+	runtime/asm_amd64.s:1700
+
+
+
+FATAL: [Apr 30 17:31:45.489] failed to configure system directories for pterodactyl error=mkdir /run/wings: permission denied
+
+Stacktrace:
+mkdir /run/wings: permission denied
+github.com/pterodactyl/wings/cmd.rootCmdRun
+	github.com/pterodactyl/wings/cmd/root.go:111
+github.com/spf13/cobra.(*Command).execute
+	github.com/spf13/cobra@v1.9.1/command.go:1019
+github.com/spf13/cobra.(*Command).ExecuteC
+	github.com/spf13/cobra@v1.9.1/command.go:1148
+github.com/spf13/cobra.(*Command).Execute
+	github.com/spf13/cobra@v1.9.1/command.go:1071
+github.com/pterodactyl/wings/cmd.Execute
+	github.com/pterodactyl/wings/cmd/root.go:71
+main.main
+	github.com/pterodactyl/wings/wings.go:17
+runtime.main
+	runtime/proc.go:283
+runtime.goexit
+	runtime/asm_amd64.s:1700
+
+
+
+ INFO: [Apr 30 20:59:51.943] writing log files to disk path=/var/www/afterreload/.wings/logs/wings.log
+DEBUG: [Apr 30 20:59:51.943] running in debug mode    
+ INFO: [Apr 30 20:59:51.944] loading configuration from file config_file=/var/www/afterreload/.wings/etc/config.yml
+ INFO: [Apr 30 20:59:51.944] configured wings with system timezone timezone=Etc/UTC
+DEBUG: [Apr 30 20:59:51.944] ensuring root data directory exists path=/var/www/afterreload/.wings
+DEBUG: [Apr 30 20:59:51.944] ensuring server data directory exists path=/var/www/afterreload/.wings/data
+DEBUG: [Apr 30 20:59:51.944] ensuring temporary data directory exists path=/tmp/pterodactyl
+DEBUG: [Apr 30 20:59:51.945] ensuring archive data directory exists path=/var/www/afterreload/.wings/archives
+DEBUG: [Apr 30 20:59:51.945] ensuring backup data directory exists path=/var/www/afterreload/.wings/backups
+DEBUG: [Apr 30 20:59:51.945] ensuring machine-id directory exists path=/run/wings/machine-id
+FATAL: [Apr 30 20:59:51.946] failed to configure system directories for pterodactyl error=mkdir /run/wings/machine-id: permission denied
+
+Stacktrace:
+mkdir /run/wings/machine-id: permission denied
+github.com/pterodactyl/wings/cmd.rootCmdRun
+	github.com/pterodactyl/wings/cmd/root.go:111
+github.com/spf13/cobra.(*Command).execute
+	github.com/spf13/cobra@v1.9.1/command.go:1019
+github.com/spf13/cobra.(*Command).ExecuteC
+	github.com/spf13/cobra@v1.9.1/command.go:1148
+github.com/spf13/cobra.(*Command).Execute
+	github.com/spf13/cobra@v1.9.1/command.go:1071
+github.com/pterodactyl/wings/cmd.Execute
+	github.com/pterodactyl/wings/cmd/root.go:71
+main.main
+	github.com/pterodactyl/wings/wings.go:17
+runtime.main
+	runtime/proc.go:283
+runtime.goexit
+	runtime/asm_amd64.s:1700
+
+
+

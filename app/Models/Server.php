@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\LocalCsgoserverRuntimeService;
 use App\Services\PterodactylService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -51,6 +52,11 @@ class Server extends Model
             if ($state !== null) {
                 return $state === 'running';
             }
+        }
+
+        $localStatus = app(LocalCsgoserverRuntimeService::class)->isRunning($this);
+        if ($localStatus !== null) {
+            return $localStatus;
         }
 
         $timeoutSeconds = max(0.1, $timeoutMs / 1000);

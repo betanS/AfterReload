@@ -1,0 +1,36 @@
+# AfterReload - Stack Tecnológico y Requerimientos de Optimización
+
+Este documento detalla el stack actual y las recomendaciones para una migración o refactorización optimizada, habiendo eliminado la lógica de APIs externas de la tienda para mejorar el rendimiento y la privacidad.
+
+## 1. Stack Tecnológico Base (Actualizado)
+- **Backend:** PHP 8.3+ (Configurado con OPcache activo y JIT habilitado).
+- **Framework:** Laravel 12.x (Última versión estable para aprovechar mejoras de rendimiento y tipado).
+- **Frontend:** 
+    - Vite 6.0+ (Sustituyendo Webpack para compilación instantánea).
+    - React 18+ o Vue 3.x (Sugerido para componentes interactivos del panel).
+    - CSS: Vanilla CSS con PostCSS o TailwindCSS (Para mantener el bundle ligero).
+- **Entorno de Ejecución:**
+    - Node.js 24 (LTS) o superior.
+    - NPM 11+.
+
+## 2. Infraestructura Recomendada
+- **Servidor Web:** Nginx 1.24+ con soporte para HTTP/2 y compresión Brotli.
+- **Base de Datos:** MariaDB 11.x o PostgreSQL 16 (Indexación optimizada para rankings).
+- **Caché y Sesiones:** Redis 7.x (Obligatorio para lobbies y estados en tiempo real).
+- **Daemon de Servidores:** Pterodactyl Wings (Para gestión aislada de servidores de CS2).
+
+## 3. Optimizaciones de Rendimiento Realizadas
+- **Limpieza de Controladores:** Eliminación del `StoreController` que realizaba peticiones HTTP pesadas a GitHub.
+- **Rutas Simplificadas:** Eliminación de lógica de "Mixed Content" al limpiar rutas obsoletas.
+- **Middleware:** Optimización del middleware de autenticación de Steam para evitar consultas redundantes a la base de datos.
+
+## 4. Estrategia de Migración / Deployment
+1. **Entorno:** Utilizar Docker (Laravel Sail preferido para desarrollo) para garantizar paridad entre entornos.
+2. **CI/CD:** GitHub Actions para:
+    - Ejecución de tests automatizados (PHPUnit/Pest).
+    - Análisis estático de código (Laravel Pint/PHPStan).
+    - Build de assets mediante Vite.
+3. **Pterodactyl Integration:** Configurar el Nodo (Wings) con SSL mediante un proxy inverso (Nginx) para evitar bloqueos de seguridad del navegador.
+
+---
+*Generado automáticamente para AfterReload - Proyecto Optimizado.*

@@ -45,6 +45,7 @@ class ServerController extends Controller
             ->orderBy('name')
             ->get()
             ->map(function (Server $server) use ($pterodactyl): array {
+                $hideAddress = $server->type === 'mm';
                 $playersCount = $server->lobbies()
                     ->whereIn('status', ['waiting', 'live'])
                     ->get()
@@ -59,13 +60,13 @@ class ServerController extends Controller
                 return [
                     'id' => $server->id,
                     'name' => $server->name,
-                    'ip' => $server->ip,
-                    'port' => $server->port,
+                    'ip' => $hideAddress ? null : $server->ip,
+                    'port' => $hideAddress ? null : $server->port,
                     'type' => $server->type,
                     'current_players' => $server->current_players,
                     'max_players' => $server->max_players,
                     'runtime_status' => $server->hasPterodactylIntegration()
-                        ? (($pterodactyl->resolveCurrentState($server) === 'running') ? 'online' : ($server->pterodactyl_status ?: 'offline'))
+                        ? (($server->pterodactyl_status === 'running') ? 'online' : ($server->pterodactyl_status ?: 'offline'))
                         : ($server->isOnline() ? 'online' : 'offline'),
                 ];
             })
