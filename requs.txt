@@ -1,36 +1,52 @@
-# AfterReload - Stack Tecnológico y Requerimientos de Optimización
+# AfterReload - Guía Maestra de Migración (Web)
 
-Este documento detalla el stack actual y las recomendaciones para una migración o refactorización optimizada, habiendo eliminado la lógica de APIs externas de la tienda para mejorar el rendimiento y la privacidad.
+Este documento contiene todo lo necesario para levantar la web de AfterReload desde cero en un nuevo servidor.
 
-## 1. Stack Tecnológico Base (Actualizado)
-- **Backend:** PHP 8.3+ (Configurado con OPcache activo y JIT habilitado).
-- **Framework:** Laravel 12.x (Última versión estable para aprovechar mejoras de rendimiento y tipado).
-- **Frontend:** 
-    - Vite 6.0+ (Sustituyendo Webpack para compilación instantánea).
-    - React 18+ o Vue 3.x (Sugerido para componentes interactivos del panel).
-    - CSS: Vanilla CSS con PostCSS o TailwindCSS (Para mantener el bundle ligero).
-- **Entorno de Ejecución:**
-    - Node.js 24 (LTS) o superior.
-    - NPM 11+.
+## 1. Requisitos del Sistema
+- **SO:** Ubuntu 22.04 LTS o superior.
+- **PHP 8.3:** Con extensiones: `dom`, `curl`, `libxml`, `mbstring`, `zip`, `pcntl`, `bcmath`, `soap`, `intl`, `gd`, `redis`.
+- **Base de Datos:** MariaDB 10.11+.
+- **Caché:** Redis Server (Crucial para Lobbies).
+- **Node.js 24 LTS & NPM.**
 
-## 2. Infraestructura Recomendada
-- **Servidor Web:** Nginx 1.24+ con soporte para HTTP/2 y compresión Brotli.
-- **Base de Datos:** MariaDB 11.x o PostgreSQL 16 (Indexación optimizada para rankings).
-- **Caché y Sesiones:** Redis 7.x (Obligatorio para lobbies y estados en tiempo real).
-- **Daemon de Servidores:** Pterodactyl Wings (Para gestión aislada de servidores de CS2).
+## 2. Instalación Paso a Paso
+1. **Clonar y Permisos:**
+   ```bash
+   git clone https://github.com/betanS/AfterReload.git
+   chown -R www-data:www-data storage bootstrap/cache
+   chmod -R 775 storage bootstrap/cache
+   ```
+2. **Dependencias:**
+   ```bash
+   composer install --optimize-autoloader --no-dev
+   npm install && npm run build
+   ```
+3. **Variables de Entorno (.env):** Asegurar que estas coincidan:
+   - `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`.
+   - `STEAM_CLIENT_ID`, `STEAM_CLIENT_SECRET`, `STEAM_REDIRECT_URI`.
+   - `PTERODACTYL_HOST`, `PTERODACTYL_CLIENT_API_KEY`.
+4. **Base de Datos:**
+   ```bash
+   php artisan migrate --force
+   ```
 
-## 3. Optimizaciones de Rendimiento Realizadas
-- **Limpieza de Controladores:** Eliminación del `StoreController` que realizaba peticiones HTTP pesadas a GitHub.
-- **Rutas Simplificadas:** Eliminación de lógica de "Mixed Content" al limpiar rutas obsoletas.
-- **Middleware:** Optimización del middleware de autenticación de Steam para evitar consultas redundantes a la base de datos.
+## 3. Configuración de Nginx (SSL Obligatorio)
+```nginx
+server {
+    listen 443 ssl;
+    server_name afterreload.com;
+    root /var/www/afterreload/public;
+    index index.php;
 
-## 4. Estrategia de Migración / Deployment
-1. **Entorno:** Utilizar Docker (Laravel Sail preferido para desarrollo) para garantizar paridad entre entornos.
-2. **CI/CD:** GitHub Actions para:
-    - Ejecución de tests automatizados (PHPUnit/Pest).
-    - Análisis estático de código (Laravel Pint/PHPStan).
-    - Build de assets mediante Vite.
-3. **Pterodactyl Integration:** Configurar el Nodo (Wings) con SSL mediante un proxy inverso (Nginx) para evitar bloqueos de seguridad del navegador.
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
 
+    location ~ \.php$ {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/run/php/php8.3-fpm.sock;
+    }
+}
+```
 ---
-*Generado automáticamente para AfterReload - Proyecto Optimizado.*
+*Generado para AfterReload - Guía de Migración Web.*
