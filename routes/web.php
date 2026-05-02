@@ -39,6 +39,7 @@ Route::middleware('auth')->group(function () {
     // Perfil e Inventario
     Route::get('/profile', fn() => view('profile'))->name('profile');
     Route::get('/inventory', fn() => view('inventory'))->name('inventory');
+    Route::get('/store', fn() => view('store'))->name('store');
 
     // Matchmaking / Lobbies
     Route::get('/lobby/{server}', [LobbyController::class, 'show'])->name('lobby.show');
