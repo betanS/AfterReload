@@ -14,9 +14,15 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('steam_id')->unique();
+            $table->string('steam_nickname')->nullable();
+            $table->string('steam_real_name')->nullable();
+            $table->string('role', 32)->default('user');
+            $table->timestamp('banned_at')->nullable();
             $table->string('name');
             $table->string('email')->unique()->nullable();
             $table->string('avatar')->nullable();
+            $table->unsignedInteger('rank_points')->default(0);
+            $table->unsignedInteger('blue_credits')->default(0);
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password')->nullable();
             $table->rememberToken();

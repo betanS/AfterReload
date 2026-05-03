@@ -6,7 +6,6 @@ use App\Models\Server;
 use App\Models\Lobby;
 use App\Services\PterodactylService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 class ServerController extends Controller
@@ -49,7 +48,7 @@ class ServerController extends Controller
                 $playersCount = $server->lobbies()
                     ->whereIn('status', ['waiting', 'live'])
                     ->get()
-                    ->map(fn (Lobby $lobby) => $this->activeUsersCount($lobby))
+                    ->map(fn (Lobby $lobby) => $lobby->users()->count())
                     ->max() ?? 0;
 
                 if ($server->current_players !== $playersCount) {
@@ -71,18 +70,5 @@ class ServerController extends Controller
                 ];
             })
             ->all();
-    }
-
-    private function activeUsersCount(Lobby $lobby): int
-    {
-        $lobby->loadMissing('users:id');
-
-        return $lobby->users
-            ->filter(function ($user) use ($lobby) {
-                $lastSeen = Cache::get("lobby:{$lobby->id}:user:{$user->id}:heartbeat");
-
-                return $lastSeen && (now()->timestamp - (int) $lastSeen) <= 35;
-            })
-            ->count();
     }
 }

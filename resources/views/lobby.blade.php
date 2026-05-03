@@ -17,7 +17,7 @@
             'password' => null,
         ],
         'lobby' => [
-            'id' => $server->id,
+            'id' => $lobby->id,
             'status' => $lobby->status,
             'is_unlimited' => $isUnlimitedLobby,
             'required_players' => $lobby->required_players,
@@ -215,7 +215,6 @@
 
     const urls = {
         status: @json(route('lobby.status', $server)),
-        heartbeat: @json(route('lobby.heartbeat', $server)),
         leave: @json(route('lobby.leave', $server)),
         team: @json(route('lobby.team', $server)),
         ready: @json(route('lobby.ready', $server)),
@@ -479,21 +478,6 @@
         }
     };
 
-    const sendHeartbeat = async () => {
-        try {
-            await fetch(urls.heartbeat, {
-                method: 'POST',
-                headers: {
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': csrfToken,
-                    'X-Requested-With': 'XMLHttpRequest',
-                },
-                keepalive: true,
-            });
-        } catch (_error) {
-        }
-    };
-
     if (joinCtBtn) {
         joinCtBtn.addEventListener('click', async () => {
             const payload = await sendJson(urls.team, { team: 'ct' });
@@ -533,15 +517,12 @@
     document.addEventListener('visibilitychange', () => {
         if (!document.hidden) {
             refreshStatus();
-            sendHeartbeat();
         }
     });
 
     applyPayload(@json($initialLobbyPayload));
 
-    sendHeartbeat();
     window.setInterval(refreshStatus, 3000);
-    window.setInterval(sendHeartbeat, 15000);
 })();
 </script>
 @endsection

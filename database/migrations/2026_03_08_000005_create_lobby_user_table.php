@@ -15,9 +15,12 @@ return new class extends Migration
             $table->id();
             $table->foreignId('lobby_id')->constrained()->cascadeOnDelete();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->string('team', 8)->nullable();
+            $table->boolean('is_ready')->default(false);
             $table->timestamps();
 
             $table->unique(['lobby_id', 'user_id']);
+            $table->index(['lobby_id', 'team']);
         });
     }
 
