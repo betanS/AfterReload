@@ -1,4 +1,4 @@
-@extends('layouts.app')
+
 
 @section('title', __('Lobby'))
 
@@ -41,7 +41,7 @@
         ])->values(),
     ];
 @endphp
-
+@extends('layouts.app')
 <div class="app-root min-h-screen bg-[#121212] text-slate-100 p-4 md:p-8">
     <div class="mx-auto max-w-7xl">
         <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
