@@ -43,7 +43,7 @@
 @endphp
 
 <div class="app-root min-h-screen bg-[#121212] text-slate-100 p-4 md:p-8">
-    <div class="mx-auto max-w-6xl">
+    <div class="mx-auto max-w-7xl">
         <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div class="flex flex-wrap items-center gap-3">
                 <a href="{{ route('servers.index') }}" class="inline-flex items-center rounded-sm border border-[#222222] bg-[#1b1b1b] px-4 py-2 text-sm font-semibold uppercase tracking-wider text-slate-200 transition hover:border-[#333333]">
@@ -54,21 +54,19 @@
                 </span>
             </div>
 
-            @if(! $isUnlimitedLobby)
-                <button id="leave-lobby" class="inline-flex items-center rounded-sm border border-red-500/30 bg-red-500/5 px-4 py-2 text-sm font-semibold uppercase tracking-wider text-red-300 transition hover:bg-red-500/10">
-                    {{ __('Salir del lobby') }}
-                </button>
-            @endif
+            <button id="leave-lobby" class="inline-flex items-center rounded-sm border border-red-500/30 bg-red-500/5 px-4 py-2 text-sm font-semibold uppercase tracking-wider text-red-300 transition hover:bg-red-500/10">
+                {{ __('Salir del lobby') }}
+            </button>
         </div>
 
         <div class="grid gap-6 lg:grid-cols-3">
-            <section class="rounded-sm border border-[#222222] bg-[#1b1b1b] p-4 shadow-xl md:p-6 lg:col-span-2">
+            <section class="w-full rounded-sm border border-[#222222] bg-[#1b1b1b] p-4 shadow-xl md:p-6 lg:col-span-2">
                 <h1 class="text-xl font-black uppercase tracking-tight text-white md:text-2xl">{{ $server->name }}</h1>
                 <p class="mt-2 text-sm font-semibold uppercase tracking-widest text-slate-400">
                     {{ __('Jugadores en lobby') }}:
                     <span id="players-count" class="font-bold text-[#5b7cff]">{{ $lobby->users_count }}</span>
                     /
-                    <span id="required-players">{{ $isUnlimitedLobby ? '∞' : $lobby->required_players }}</span>
+                    <span id="required-players">{{ $isUnlimitedLobby ? $server->max_players : $lobby->required_players }}</span>
                 </p>
 
                 @if(! $isUnlimitedLobby)
@@ -126,25 +124,27 @@
                         </div>
                     </div>
                 @else
-                    <div class="mt-6 rounded-sm border border-[#222222] bg-[#121212] p-4">
-                        <p class="mb-4 text-xs font-bold uppercase tracking-[0.2em] text-slate-500">{{ __('Jugadores conectados') }}</p>
-                        <div id="generic-list" class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                            @foreach($genericPlayers as $player)
-                                <div class="flex items-center gap-3 rounded-sm border border-[#222222] bg-[#1b1b1b] px-3 py-2">
-                                    <img src="{{ $player->avatar }}" alt="Avatar {{ $player->steam_nickname ?? $player->name }}" class="h-8 w-8 rounded-sm border border-[#5b7cff]/40">
-                                    <div class="min-w-0 flex-1">
-                                        <p class="truncate text-sm font-bold text-white">{{ $player->steam_nickname ?? $player->name }}</p>
-                                        <p class="text-[10px] font-semibold uppercase tracking-tighter text-slate-500">Elo: {{ $player->rank_points }}</p>
-                                    </div>
-                                </div>
-                            @endforeach
+                    <div class="mt-6">
+                        <div class="rounded-sm border border-[#5b7cff]/20 bg-[#121212] p-4">
+                            <div class="flex items-center justify-between mb-4">
+                                <h2 class="text-xs font-bold uppercase tracking-widest text-[#5b7cff] md:text-sm">{{ __('Lista de Jugadores') }}</h2>
+                                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{{ __('Slots Disponibles') }}</span>
+                            </div>
+                            
+                            <button id="join-public" class="mb-6 w-full rounded-sm border border-[#5b7cff]/30 bg-[#5b7cff]/10 px-4 py-3 text-xs font-black uppercase tracking-widest text-[#5b7cff] transition hover:bg-[#5b7cff] hover:text-white">
+                                {{ __('Entrar al servidor') }}
+                            </button>
+
+                            <div id="generic-list" class="grid gap-2 md:gap-3 sm:grid-cols-2">
+                                <!-- JS rendered slots -->
+                            </div>
                         </div>
                     </div>
                 @endif
             </section>
 
-            <aside class="h-fit rounded-sm border border-[#222222] bg-[#1b1b1b] p-4 shadow-xl md:p-6">
-                @if($isUnlimitedLobby)
+            <aside class="w-full h-fit rounded-sm border border-[#222222] bg-[#1b1b1b] p-4 shadow-xl md:p-6">
+                <div id="public-connection-panel" class="{{ $isUnlimitedLobby && $lobby->users->contains(Auth::id()) ? '' : 'hidden' }}">
                     <div class="mb-4 rounded-sm border border-[#5b7cff]/20 bg-[#5b7cff]/5 p-4">
                         <p class="mb-1 text-[10px] font-bold uppercase tracking-widest text-[#5b7cff]">{{ __('IP pública del servidor') }}</p>
                         <p id="public-server-address" class="break-all rounded-sm border border-[#222222] bg-[#121212] p-2 font-mono text-sm text-white">{{ $server->ip }}:{{ $server->port }}</p>
@@ -153,7 +153,7 @@
                             {{ __('Conectar ahora') }}
                         </a>
                     </div>
-                @endif
+                </div>
 
                 <div id="ready-panel" class="{{ ($isReady && ! $isUnlimitedLobby) ? '' : 'hidden' }}">
                     <p class="mb-1 text-[10px] font-bold uppercase tracking-widest text-emerald-400 md:text-xs">{{ __('Partida lista') }}</p>
@@ -171,11 +171,11 @@
                     </a>
                 </div>
 
-                <div id="waiting-panel" class="{{ ($isReady && ! $isUnlimitedLobby) ? 'hidden' : '' }}">
+                <div id="waiting-panel" class="{{ (($isReady && ! $isUnlimitedLobby) || ($isUnlimitedLobby && $lobby->users->contains(Auth::id()))) ? 'hidden' : '' }}">
                     @if($isUnlimitedLobby)
                         <p class="mb-1 text-[10px] font-bold uppercase tracking-widest text-[#5b7cff] md:text-xs">{{ __('Estado del servidor') }}</p>
                         <h2 class="text-lg font-black uppercase tracking-tight text-white md:text-xl">{{ __('Servidor Activo') }}</h2>
-                        <p class="mt-3 text-sm text-slate-400">{{ __('Servidor público abierto. Conéctate para jugar.') }}</p>
+                        <p class="mt-3 text-sm text-slate-400">{{ __('Servidor público abierto. Únete a un slot para jugar.') }}</p>
                     @else
                         <p class="mb-1 text-[10px] font-bold uppercase tracking-widest text-[#5b7cff] md:text-xs">{{ __('Esperando jugadores') }}</p>
                         <h2 class="text-lg font-black uppercase tracking-tight text-white md:text-xl">{{ __('En cola para match') }}</h2>
@@ -234,17 +234,20 @@
     const lobbyStatus = document.getElementById('lobby-status');
     const waitingPanel = document.getElementById('waiting-panel');
     const readyPanel = document.getElementById('ready-panel');
+    const publicConnectionPanel = document.getElementById('public-connection-panel');
     const readySection = document.getElementById('ready-section');
     const serverAddress = document.getElementById('server-address');
     const connectCommand = document.getElementById('connect-command');
-    const publicServerAddress = document.getElementById('public-server-address');
-    const publicConnectCommand = document.getElementById('public-connect-command');
+    const publicServerAddress = document.getElementById('public-server-address'); // Fixed typo
+    const publicConnectCommand = document.getElementById('public-connect-command'); // Fixed typo
     const joinMatchLink = document.getElementById('join-match-link');
     const publicJoinLink = document.getElementById('public-join-link');
     const toggleReadyBtn = document.getElementById('toggle-ready');
     const joinCtBtn = document.getElementById('join-ct');
     const joinTBtn = document.getElementById('join-t');
+    const joinPublicBtn = document.getElementById('join-public');
     const leaveLobbyBtn = document.getElementById('leave-lobby');
+    const backToServerLink = document.querySelector('a[href="{{ route('servers.index') }}"]'); // Select the "Back to servers" link
 
     let pendingRequest = false;
 
@@ -254,6 +257,43 @@
         .replaceAll('>', '&gt;')
         .replaceAll('"', '&quot;')
         .replaceAll("'", '&#039;');
+
+    const renderSlots = (container, users, max, borderClass) => {
+        if (!container) return;
+        
+        let html = '';
+        // Real users
+        users.forEach((user) => {
+            const name = escapeHtml(user.name ?? 'Steam User');
+            const avatar = escapeHtml(user.avatar ?? 'https://placehold.co/40x40');
+            const rank = escapeHtml(user.rank_points ?? 0);
+            html += `
+                <div class="relative flex items-center gap-3 rounded-sm border border-[#222222] bg-[#1b1b1b] px-3 py-2 md:px-4 md:py-3 transition hover:bg-[#222222]/50">
+                    <img src="${avatar}" alt="Avatar ${name}" class="h-8 w-8 rounded-sm border ${borderClass} md:h-10 md:w-10">
+                    <div class="min-w-0 flex-1">
+                        <p class="truncate text-sm font-bold text-white">${name}</p>
+                        <p class="text-[10px] font-semibold uppercase tracking-tighter text-slate-500 md:text-xs">{{ __('Elo') }}: ${rank}</p>
+                    </div>
+                </div>
+            `;
+        });
+        
+        // Empty slots
+        for (let i = users.length; i < max; i++) {
+            html += `
+                <div class="flex items-center gap-3 rounded-sm border border-dashed border-[#222222] bg-transparent px-3 py-2 md:px-4 md:py-3 opacity-40">
+                    <div class="h-8 w-8 rounded-sm border border-[#222222] bg-[#1b1b1b] md:h-10 md:w-10 flex items-center justify-center">
+                        <span class="text-slate-600 text-[10px] font-black">+</span>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <p class="truncate text-xs font-bold text-slate-600 uppercase tracking-widest">{{ __('Espacio Vacío') }}</p>
+                    </div>
+                </div>
+            `;
+        }
+        
+        container.innerHTML = html;
+    };
 
     const renderPlayers = (container, users, borderClass) => {
         if (!container) {
@@ -321,14 +361,20 @@
         }
     };
 
+    let currentLobbyState = @json($initialLobbyPayload);
+
     const applyPayload = (payload) => {
+        console.log('applyPayload: Received payload:', payload); // Debugging
         if (!payload || !payload.lobby || !Array.isArray(payload.users)) {
+            console.error('applyPayload: Invalid payload received.', payload); // Debugging
             return;
         }
 
+        currentLobbyState = payload; // Update global lobby state
+
         const users = payload.users;
         const lobby = payload.lobby;
-        const currentUser = users.find((user) => user.is_current_user || user.id === authUserId) ?? null;
+        const currentUser = users.find((user) => user.is_current_user) ?? null; // Simplified currentUser check
         const lobbyLocked = !!lobby.locked;
 
         if (playersCount) {
@@ -406,7 +452,16 @@
                 readySection.classList.toggle('opacity-50', lobbyLocked);
             }
         } else {
-            renderPlayers(genericList, users, 'border-[#5b7cff]/40');
+            renderSlots(genericList, users, @json($server->max_players), 'border-[#5b7cff]/40');
+            
+            if (joinPublicBtn) {
+                joinPublicBtn.disabled = !!currentUser;
+                joinPublicBtn.classList.toggle('hidden', !!currentUser);
+            }
+
+            if (publicConnectionPanel) {
+                publicConnectionPanel.classList.toggle('hidden', !currentUser);
+            }
         }
 
         const showReadyPanel = !isUnlimitedLobby && !!payload.is_ready;
@@ -414,19 +469,24 @@
             readyPanel.classList.toggle('hidden', !showReadyPanel);
         }
         if (waitingPanel) {
-            waitingPanel.classList.toggle('hidden', showReadyPanel);
+            // For public, hide waiting panel if user has joined a slot
+            const hideWaitingForPublic = isUnlimitedLobby && !!currentUser;
+            waitingPanel.classList.toggle('hidden', showReadyPanel || hideWaitingForPublic);
         }
         if (leaveLobbyBtn) {
+            leaveLobbyBtn.classList.toggle('hidden', !currentUser);
             leaveLobbyBtn.disabled = lobbyLocked;
         }
     };
 
-    const sendJson = async (url, body = {}) => {
-        if (pendingRequest) {
+    const sendJson = async (url, body = {}, ignorePending = false) => {
+        if (pendingRequest && !ignorePending) {
+            console.log('sendJson: Request already pending.');
             return null;
         }
 
         pendingRequest = true;
+        console.log('sendJson: Sending request to', url, 'with body', body); // Debugging
 
         try {
             const response = await fetch(url, {
@@ -440,12 +500,16 @@
                 body: JSON.stringify(body),
             });
 
-            const payload = await response.json().catch(() => ({}));
+            const payload = await response.json().catch(() => {
+                console.error('sendJson: Failed to parse JSON response. Raw response:', response); // Debugging
+                return {};
+            });
 
             if (!response.ok) {
+                console.error('sendJson: Request failed with status', response.status, 'Payload:', payload); // Debugging
                 throw new Error(payload.message || 'request-failed');
             }
-
+            console.log('sendJson: Request successful. Payload:', payload); // Debugging
             return payload;
         } finally {
             pendingRequest = false;
@@ -475,6 +539,7 @@
             const payload = await response.json();
             applyPayload(payload);
         } catch (_error) {
+            console.error('refreshStatus: Error refreshing lobby status.', _error); // Debugging
         }
     };
 
@@ -505,8 +570,19 @@
         });
     }
 
+    if (joinPublicBtn) {
+        joinPublicBtn.addEventListener('click', async () => {
+            console.log('joinPublicBtn: Clicked. Attempting to join public lobby.'); // Debugging
+            const payload = await sendJson(urls.team, { team: 'ct' }); // Use 'ct' as internal team for public lobbies
+            if (payload) {
+                applyPayload(payload);
+            }
+        });
+    }
+
     if (leaveLobbyBtn) {
         leaveLobbyBtn.addEventListener('click', async () => {
+            console.log('leaveLobbyBtn: Clicked. Attempting to leave lobby.'); // Debugging
             const payload = await sendJson(urls.leave);
             if (payload?.left) {
                 window.location.href = urls.servers;
@@ -514,15 +590,37 @@
         });
     }
 
-    document.addEventListener('visibilitychange', () => {
-        if (!document.hidden) {
-            refreshStatus();
+    if (backToServerLink) {
+        backToServerLink.addEventListener('click', async (e) => {
+            e.preventDefault(); // Prevent default navigation
+            console.log('backToServerLink: Clicked. Attempting to leave lobby before redirect.'); // Debugging
+            const payload = await sendJson(urls.leave);
+            if (payload?.left) {
+                window.location.href = urls.servers; // Redirect after leaving
+            } else {
+                // If leaving failed, still redirect to avoid being stuck.
+                console.warn('backToServerLink: Failed to leave lobby, redirecting anyway.');
+                window.location.href = urls.servers;
+            }
+        });
+    }
+
+    window.addEventListener('beforeunload', (e) => {
+        const currentUserInLobby = currentLobbyState.users.find((user) => user.is_current_user);
+        if (currentUserInLobby) {
+            console.log('beforeunload: User is in lobby, sending leave request.'); // Debugging
+            // Send leave request without waiting for response
+            sendJson(urls.leave, {}, true); // ignorePending to allow sending even if another request is in flight
+            
+            // Standard browser warning
+            e.preventDefault(); 
+            e.returnValue = ''; // Some browsers require returnValue to be set
+            return ''; // Message for some older browsers
         }
     });
 
-    applyPayload(@json($initialLobbyPayload));
+    applyPayload(currentLobbyState); // Use the global state here
 
     window.setInterval(refreshStatus, 3000);
 })();
 </script>
-@endsection

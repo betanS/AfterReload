@@ -18,12 +18,9 @@ return new class extends Migration
             $table->unsignedInteger('port');
             $table->string('rcon_password')->nullable();
             $table->string('type', 20)->default('public');
+            $table->string('status', 20)->default('online');
             $table->unsignedInteger('max_players');
             $table->unsignedInteger('current_players')->default(0);
-            $table->string('pterodactyl_identifier')->nullable();
-            $table->string('pterodactyl_uuid')->nullable();
-            $table->string('pterodactyl_status', 32)->nullable();
-            $table->timestamp('pterodactyl_last_synced_at')->nullable();
             $table->timestamps();
         });
     }

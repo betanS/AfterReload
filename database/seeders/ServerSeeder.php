@@ -21,7 +21,6 @@ class ServerSeeder extends Seeder
             'type' => 'public',
             'max_players' => 10,
             'current_players' => 0,
-            'pterodactyl_identifier' => null,
         ]);
 
         Server::create([
@@ -31,7 +30,6 @@ class ServerSeeder extends Seeder
             'type' => 'public',
             'max_players' => 4,
             'current_players' => 0,
-            'pterodactyl_identifier' => null,
         ]);
 
         Server::create([
@@ -42,7 +40,6 @@ class ServerSeeder extends Seeder
             'type' => 'mm',
             'max_players' => 10,
             'current_players' => 0,
-            'pterodactyl_identifier' => null,
         ]);
     }
 }

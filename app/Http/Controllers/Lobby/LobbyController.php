@@ -23,6 +23,19 @@ class LobbyController extends Controller
             return redirect()->route('home')->with('server_error', 'Servidor offline. Intenta mas tarde.');
         }
 
+        $userId = Auth::id();
+        
+        // Remove user from any other lobbies they might be in
+        \DB::table('lobby_user')
+            ->where('user_id', $userId)
+            ->whereNotExists(function ($query) use ($server) {
+                $query->select(\DB::raw(1))
+                    ->from('lobbies')
+                    ->whereColumn('lobbies.id', 'lobby_user.lobby_id')
+                    ->where('lobbies.server_id', $server->id);
+            })
+            ->delete();
+
         [$server, $lobby, $isReady, $missingPlayers] = $this->resolveLobbyState($server);
         $lobby->load('users:id,name,steam_nickname,avatar,rank_points');
         $lobby->loadCount('users');
@@ -80,25 +93,27 @@ class LobbyController extends Controller
         $userId = Auth::id();
         $team = request()->string('team')->lower()->value();
 
-        if (!in_array($team, ['ct', 't'], true)) {
+        if ($server->type !== 'public' && !in_array($team, ['ct', 't'], true)) {
             return response()->json(['message' => 'Equipo invalido'], 422);
+        }
+
+        // For public servers, we just use 'ct' as the default team internally
+        if ($server->type === 'public') {
+            $team = 'ct';
         }
 
         $lobby = $this->getOrCreateWaitingLobby($server);
 
         if ($this->isMatchInProgress($lobby, $server)) {
-            return response()->json(['message' => 'No puedes cambiar de equipo ahora.'], 409);
+            return response()->json(['message' => 'No puedes unirte ahora.'], 409);
         }
 
-        $teamSize = (int) ($lobby->required_players / 2);
-        $teamCount = $lobby->users()->wherePivot('team', $team)->count();
-        $isAlreadyInTeam = $lobby->users()
-            ->where('users.id', $userId)
-            ->wherePivot('team', $team)
-            ->exists();
+        $maxPlayers = $server->max_players;
+        $currentCount = $lobby->users()->count();
+        $isAlreadyIn = $lobby->users()->where('users.id', $userId)->exists();
 
-        if (!$isAlreadyInTeam && $teamCount >= $teamSize) {
-            return response()->json(['message' => 'Equipo lleno'], 409);
+        if (!$isAlreadyIn && $currentCount >= $maxPlayers) {
+            return response()->json(['message' => 'Servidor lleno'], 409);
         }
 
         $lobby->users()->syncWithoutDetaching([

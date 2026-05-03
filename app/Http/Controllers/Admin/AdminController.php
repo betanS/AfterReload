@@ -5,11 +5,11 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Server;
 use App\Models\User;
-use App\Services\PterodactylService;
+use App\Models\Lobby;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Arr;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
 {
@@ -26,7 +26,7 @@ class AdminController extends Controller
         });
     }
 
-    public function index(PterodactylService $pterodactyl): View
+    public function index(): View
     {
         $users = User::query()
             ->orderByDesc('created_at')
@@ -36,26 +36,28 @@ class AdminController extends Controller
         $activeLobbies = \App\Models\Lobby::where('status', 'waiting')->count();
         $totalServers = \App\Models\Server::count();
         $totalMatches = \App\Models\MatchResult::count();
+        
         $servers = Server::query()
             ->orderByRaw("case when type = 'public' then 0 when type = 'mm' then 1 else 2 end")
             ->orderBy('port')
             ->orderBy('name')
             ->get();
-        $displayServers = $servers->map(function (Server $server) use ($pterodactyl): array {
+
+        $displayServers = $servers->map(function (Server $server): array {
             return [
+                'id' => $server->id,
                 'name' => $server->name,
                 'type' => $server->type,
+                'status' => $server->status,
                 'runtime_status' => $server->runtimeStatus(),
                 'ip' => $server->ip,
                 'port' => $server->port,
                 'current_players' => $server->current_players,
                 'max_players' => $server->max_players,
-                'identifier' => $server->pterodactyl_identifier,
-                'panel_link' => $server->hasPterodactylIntegration() ? $pterodactyl->panelLink($server) : null,
-                'last_synced_human' => optional($server->pterodactyl_last_synced_at)->diffForHumans() ?? __('Nunca'),
             ];
         })->all();
-        $onlineServers = $servers->filter(fn (Server $server) => $server->runtimeStatus() === 'running' || $server->runtimeStatus() === 'online')->count();
+
+        $onlineServers = $servers->filter(fn (Server $server) => $server->runtimeStatus() === 'online')->count();
 
         return view('admin.index', [
             'users' => $users,
@@ -65,8 +67,6 @@ class AdminController extends Controller
             'totalServers' => $totalServers,
             'totalMatches' => $totalMatches,
             'onlineServers' => $onlineServers,
-            'pterodactylConfigured' => $pterodactyl->isConfigured(),
-            'pterodactylPanelUrl' => $pterodactyl->getPanelUrl(),
         ]);
     }
 
@@ -120,100 +120,24 @@ class AdminController extends Controller
         return back()->with('status', 'Servidor actualizado.');
     }
 
-    public function syncServer(Server $server, PterodactylService $pterodactyl): RedirectResponse
+    public function deleteServer(Server $server): RedirectResponse
     {
-        try {
-            $pterodactyl->sync($server);
-        } catch (\Throwable $e) {
-            return back()->with('status', 'Error al sincronizar Pterodactyl: ' . $e->getMessage());
-        }
+        $server->delete();
 
-        return back()->with('status', 'Servidor sincronizado con Pterodactyl.');
+        return back()->with('status', 'Servidor eliminado.');
     }
 
-    public function importServers(PterodactylService $pterodactyl): RedirectResponse
+    public function clearLobbies(): RedirectResponse
     {
-        if (! $pterodactyl->hasApplicationApi()) {
-            return back()->with('status', 'Para importar necesitas PTERODACTYL_URL y PTERODACTYL_APPLICATION_API_KEY.');
-        }
+        $clearedCount = \DB::table('lobby_user')->delete();
+        
+        // Reset player count on all servers
+        Server::query()->update(['current_players' => 0]);
+        
+        // Reset all lobbies to waiting status
+        Lobby::query()->update(['status' => 'waiting', 'started_at' => null]);
 
-        try {
-            $remoteServers = $pterodactyl->listServers();
-        } catch (\Throwable $e) {
-            return back()->with('status', 'Error al importar desde Pterodactyl: ' . $e->getMessage());
-        }
-
-        $imported = 0;
-        $updated = 0;
-        $skipped = 0;
-
-        foreach ($remoteServers as $remote) {
-            $identifier = trim((string) Arr::get($remote, 'identifier', ''));
-            $name = trim((string) Arr::get($remote, 'name', ''));
-            $ip = Arr::get($remote, 'ip');
-            $port = Arr::get($remote, 'port');
-
-            if ($identifier === '' || $name === '' || ! is_string($ip) || $ip === '' || ! is_numeric($port)) {
-                $skipped++;
-                continue;
-            }
-
-            $status = Arr::get($remote, 'status');
-            $statusValue = is_string($status) && $status !== '' ? $status : null;
-
-            $server = Server::query()->where('pterodactyl_identifier', $identifier)->first();
-
-            if (! $server) {
-                $server = Server::query()->where('ip', $ip)->where('port', (int) $port)->first();
-            }
-
-            if ($server) {
-                $payload = [
-                    'name' => $name,
-                    'ip' => $ip,
-                    'port' => (int) $port,
-                    'type' => $server->type ?: 'mm',
-                    'max_players' => $server->max_players > 0 ? $server->max_players : 10,
-                    'pterodactyl_identifier' => $identifier,
-                    'pterodactyl_uuid' => Arr::get($remote, 'uuid'),
-                    'pterodactyl_status' => $statusValue,
-                    'pterodactyl_last_synced_at' => now(),
-                ];
-                $server->update($payload);
-                $updated++;
-            } else {
-                Server::query()->create([
-                    'name' => $name,
-                    'ip' => $ip,
-                    'port' => (int) $port,
-                    'type' => 'mm',
-                    'max_players' => 10,
-                    'current_players' => 0,
-                    'rcon_password' => null,
-                    'pterodactyl_identifier' => $identifier,
-                    'pterodactyl_uuid' => Arr::get($remote, 'uuid'),
-                    'pterodactyl_status' => $statusValue,
-                    'pterodactyl_last_synced_at' => now(),
-                ]);
-                $imported++;
-            }
-        }
-
-        return back()->with('status', "Import completado. Nuevos: {$imported}, actualizados: {$updated}, omitidos: {$skipped}.");
-    }
-
-    public function powerServer(Request $request, Server $server, PterodactylService $pterodactyl): RedirectResponse
-    {
-        $signal = $request->string('signal')->lower()->value();
-
-        try {
-            $pterodactyl->sendPowerSignal($server, $signal);
-            $pterodactyl->sync($server);
-        } catch (\Throwable $e) {
-            return back()->with('status', 'Error en acción de energía: ' . $e->getMessage());
-        }
-
-        return back()->with('status', 'Acción enviada al panel: ' . $signal . '.');
+        return back()->with('status', "Se han expulsado {$clearedCount} jugadores de todos los servidores y se han reiniciado los contadores.");
     }
 
     /**
@@ -226,21 +150,14 @@ class AdminController extends Controller
             'ip' => ['required', 'string', 'max:255'],
             'port' => ['required', 'integer', 'min:1', 'max:65535'],
             'type' => ['required', 'in:public,mm'],
+            'status' => ['required', 'in:online,offline'],
             'max_players' => ['required', 'integer', 'min:1', 'max:64'],
             'current_players' => ['nullable', 'integer', 'min:0', 'max:64'],
             'rcon_password' => ['nullable', 'string', 'max:255'],
-            'pterodactyl_identifier' => ['nullable', 'string', 'max:255'],
         ]);
 
         $data['current_players'] = $data['current_players'] ?? 0;
         $data['rcon_password'] = $data['rcon_password'] ?: null;
-        $data['pterodactyl_identifier'] = $data['pterodactyl_identifier'] ?: null;
-
-        if (! $data['pterodactyl_identifier']) {
-            $data['pterodactyl_uuid'] = null;
-            $data['pterodactyl_status'] = null;
-            $data['pterodactyl_last_synced_at'] = null;
-        }
 
         return $data;
     }

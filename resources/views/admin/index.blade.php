@@ -11,9 +11,11 @@
             </div>
         @endif
 
-        <div class="mb-10">
-            <h2 class="text-4xl font-black uppercase tracking-tighter text-white italic">{{ __('Panel de Administración') }}</h2>
-            <p class="text-sm text-slate-500 uppercase font-bold tracking-widest mt-2">{{ __('Gestión global de usuarios y plataforma') }}</p>
+        <div class="mb-10 flex justify-between items-end">
+            <div>
+                <h2 class="text-4xl font-black uppercase tracking-tighter text-white italic">{{ __('Panel de Administración') }}</h2>
+                <p class="text-sm text-slate-500 uppercase font-bold tracking-widest mt-2">{{ __('Gestión global de usuarios y plataforma') }}</p>
+            </div>
         </div>
 
         <!-- Quick Stats -->
@@ -40,117 +42,82 @@
             </div>
         </div>
 
+        <!-- Servers Management -->
         <div class="mb-12 rounded-sm border border-[#222222] bg-[#1b1b1b] shadow-2xl overflow-hidden">
-            <div class="flex flex-col gap-4 border-b border-[#222222] bg-[#1b1b1b] p-6 md:flex-row md:items-start md:justify-between">
+            <div class="flex flex-col gap-4 border-b border-[#222222] bg-[#1b1b1b] p-6 md:flex-row md:items-center md:justify-between">
                 <div>
-                    <h3 class="font-black uppercase tracking-widest text-white text-sm italic">{{ __('Servidores y Pterodactyl') }}</h3>
-                    <p class="mt-2 text-xs uppercase tracking-[0.2em] text-slate-500">{{ __('La administración real vive en panel.afterreload; aquí solo queda el resumen operativo.') }}</p>
+                    <h3 class="font-black uppercase tracking-widest text-white text-sm italic">{{ __('Gestión de Servidores') }}</h3>
+                    <p class="mt-2 text-xs uppercase tracking-[0.2em] text-slate-500">{{ __('Control operativo de los nodos de juego.') }}</p>
                 </div>
-                <div class="flex flex-wrap gap-2">
-                    @if ($pterodactylConfigured && $pterodactylPanelUrl !== '')
-                        <form action="{{ route('admin.servers.import') }}" method="POST">
-                            @csrf
-                            <button type="submit" class="inline-flex items-center justify-center rounded-sm border border-emerald-500 bg-emerald-500/10 px-4 py-3 text-[10px] font-black uppercase tracking-widest text-emerald-300 transition hover:bg-emerald-500 hover:text-white">
-                                {{ __('Importar servers de Pterodactyl') }}
-                            </button>
-                        </form>
-                        <a href="{{ $pterodactylPanelUrl }}" target="_blank" rel="noreferrer" class="inline-flex items-center justify-center rounded-sm border border-[#5b7cff] bg-[#5b7cff] px-4 py-3 text-[10px] font-black uppercase tracking-widest text-white transition hover:bg-[#7c5cff]">
-                            {{ __('Abrir panel.afterreload') }}
-                        </a>
-                    @endif
+                <div class="flex gap-3">
+                    <form action="{{ route('admin.servers.clear-lobbies') }}" method="POST" onsubmit="return confirm('¿Seguro que quieres limpiar todos los lobbies de Matchmaking?')">
+                        @csrf
+                        <button type="submit" class="inline-flex items-center justify-center rounded-sm border border-red-500/50 bg-red-500/10 px-4 py-3 text-[10px] font-black uppercase tracking-widest text-red-400 transition hover:bg-red-500 hover:text-white">
+                            {{ __('Limpiar Lobbies MM') }}
+                        </button>
+                    </form>
+                    <button onclick="document.getElementById('server-modal-create').classList.remove('hidden')" class="inline-flex items-center justify-center rounded-sm border border-[#5b7cff] bg-[#5b7cff] px-4 py-3 text-[10px] font-black uppercase tracking-widest text-white transition hover:bg-[#7c5cff]">
+                        {{ __('Añadir Servidor') }}
+                    </button>
                 </div>
             </div>
 
-            <div class="grid gap-4 border-b border-[#222222] bg-[#161616] p-6 md:grid-cols-3">
-                <div class="rounded-sm border border-[#222222] bg-[#121212] p-4">
-                    <p class="text-[10px] font-bold uppercase tracking-widest text-slate-500">{{ __('Fuente de la lista') }}</p>
-                    <p class="mt-2 text-sm font-black uppercase tracking-wide text-white">{{ __('Base local') }}</p>
-                    <p class="mt-2 text-xs text-slate-500">{{ __('El dashboard muestra los servidores registrados en la web y deja Pterodactyl solo como acceso externo.') }}</p>
-                </div>
-                <div class="rounded-sm border border-[#222222] bg-[#121212] p-4">
-                    <p class="text-[10px] font-bold uppercase tracking-widest text-slate-500">{{ __('Panel externo') }}</p>
-                    <p class="mt-2 text-sm font-black uppercase tracking-wide {{ $pterodactylPanelUrl !== '' ? 'text-emerald-400' : 'text-red-400' }}">
-                        {{ $pterodactylPanelUrl !== '' ? __('Disponible') : __('Sin configurar') }}
-                    </p>
-                    <p class="mt-2 break-all text-xs text-slate-500">{{ $pterodactylPanelUrl !== '' ? $pterodactylPanelUrl : __('Falta PTERODACTYL_URL.') }}</p>
-                </div>
-                <div class="rounded-sm border border-[#222222] bg-[#121212] p-4">
-                    <p class="text-[10px] font-bold uppercase tracking-widest text-slate-500">{{ __('Uso de Pterodactyl') }}</p>
-                    <p class="mt-2 text-sm font-black uppercase tracking-wide text-white">{{ __('Gestión externa') }}</p>
-                    <p class="mt-2 text-xs text-slate-500">{{ __('La administración directa sigue en panel.afterreload; aquí solo quedan el resumen y los accesos rápidos.') }}</p>
-                </div>
-            </div>
-
-            <div class="grid gap-4 p-6">
-                @forelse ($servers as $server)
-                    @php
-                        $runtimeStatus = $server['runtime_status'];
-                        $panelLink = $server['panel_link'] ?? null;
-                    @endphp
-                    <div class="rounded-sm border border-[#222222] bg-[#161616] p-5">
-                        <div class="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                            <div>
-                                <div class="flex items-center gap-3">
-                                    <h4 class="text-lg font-black uppercase tracking-tight text-white">{{ $server['name'] }}</h4>
-                                    <span class="rounded-sm border px-2 py-1 text-[9px] font-black uppercase tracking-widest {{ in_array($runtimeStatus, ['online', 'running'], true) ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400' : 'border-slate-700 bg-slate-900/60 text-slate-400' }}">
-                                        {{ strtoupper($runtimeStatus) }}
-                                    </span>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                    <thead class="bg-[#222222] text-slate-400 uppercase font-bold tracking-widest text-[10px] border-b border-[#333333]">
+                        <tr>
+                            <th class="p-4">{{ __('Servidor') }}</th>
+                            <th class="p-4">{{ __('Dirección') }}</th>
+                            <th class="p-4">{{ __('Tipo') }}</th>
+                            <th class="p-4">{{ __('Config') }}</th>
+                            <th class="p-4">{{ __('Estado Real') }}</th>
+                            <th class="p-4">{{ __('Jugadores') }}</th>
+                            <th class="p-4 text-right">{{ __('Acciones') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-[#222222]">
+                        @foreach($servers as $server)
+                            <tr class="transition hover:bg-[#222222]/40 group">
+                                <td class="p-4">
+                                    <p class="font-bold text-white">{{ $server['name'] }}</p>
+                                </td>
+                                <td class="p-4">
+                                    <p class="text-[10px] font-mono text-slate-400">{{ $server['ip'] }}:{{ $server['port'] }}</p>
+                                </td>
+                                <td class="p-4">
                                     <span class="rounded-sm border border-[#5b7cff]/30 bg-[#5b7cff]/10 px-2 py-1 text-[9px] font-black uppercase tracking-widest text-[#a5b4ff]">
-                                        {{ strtoupper($server['type'] ?? 'server') }}
+                                        {{ strtoupper($server['type']) }}
                                     </span>
-                                </div>
-                                <p class="mt-2 text-xs text-slate-500">
-                                    @if (!empty($server['ip']) && !empty($server['port']))
-                                        {{ $server['ip'] }}:{{ $server['port'] }}
-                                    @endif
-                                    @if (!empty($server['identifier']))
-                                        <span class="ml-3 font-mono text-[#a5b4ff]">Ptero: {{ $server['identifier'] }}</span>
-                                    @endif
-                                </p>
-                            </div>
-                            <div class="flex flex-wrap gap-2">
-                                @if ($panelLink)
-                                    <a href="{{ $panelLink }}" target="_blank" rel="noreferrer" class="rounded-sm border border-[#5b7cff]/40 px-3 py-2 text-[10px] font-black uppercase tracking-widest text-[#a5b4ff] transition hover:bg-[#5b7cff] hover:text-white">
-                                        {{ __('Gestionar en panel.afterreload') }}
-                                    </a>
-                                @elseif ($pterodactylPanelUrl !== '')
-                                    <a href="{{ $pterodactylPanelUrl }}" target="_blank" rel="noreferrer" class="rounded-sm border border-slate-600 px-3 py-2 text-[10px] font-black uppercase tracking-widest text-slate-300 transition hover:border-white hover:text-white">
-                                        {{ __('Abrir panel general') }}
-                                    </a>
-                                @endif
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
-                            <div class="rounded-sm border border-[#222222] bg-[#121212] px-4 py-3">
-                                <p class="text-[10px] font-bold uppercase tracking-widest text-slate-500">{{ __('Host') }}</p>
-                                <p class="mt-2 text-sm font-bold text-white">{{ $server['ip'] ?? __('N/D') }}</p>
-                            </div>
-                            <div class="rounded-sm border border-[#222222] bg-[#121212] px-4 py-3">
-                                <p class="text-[10px] font-bold uppercase tracking-widest text-slate-500">{{ __('Puerto') }}</p>
-                                <p class="mt-2 text-sm font-bold text-white">{{ $server['port'] ?? __('N/D') }}</p>
-                            </div>
-                            <div class="rounded-sm border border-[#222222] bg-[#121212] px-4 py-3">
-                                <p class="text-[10px] font-bold uppercase tracking-widest text-slate-500">{{ __('Jugadores') }}</p>
-                                <p class="mt-2 text-sm font-bold text-white">
-                                    @if (($server['current_players'] ?? null) !== null && ($server['max_players'] ?? null) !== null)
-                                        {{ $server['current_players'] }} / {{ $server['max_players'] }}
-                                    @else
-                                        {{ __('N/D') }}
-                                    @endif
-                                </p>
-                            </div>
-                            <div class="rounded-sm border border-[#222222] bg-[#121212] px-4 py-3">
-                                <p class="text-[10px] font-bold uppercase tracking-widest text-slate-500">{{ __('Última sincronización') }}</p>
-                                <p class="mt-2 text-sm font-bold text-white">{{ $server['last_synced_human'] ?? __('Nunca') }}</p>
-                            </div>
-                        </div>
-                    </div>
-                @empty
-                    <div class="rounded-sm border border-dashed border-[#333333] p-6 text-sm text-slate-500">
-                        {{ __('No hay servidores configurados todavía.') }}
-                    </div>
-                @endforelse
+                                </td>
+                                <td class="p-4">
+                                    <span class="text-[9px] font-black uppercase tracking-widest {{ $server['status'] === 'online' ? 'text-emerald-400' : 'text-red-400' }}">
+                                        {{ strtoupper($server['status']) }}
+                                    </span>
+                                </td>
+                                <td class="p-4">
+                                    <span class="rounded-sm border px-2 py-1 text-[9px] font-black uppercase tracking-widest {{ $server['runtime_status'] === 'online' ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400' : 'border-slate-700 bg-slate-900/60 text-slate-400' }}">
+                                        {{ strtoupper($server['runtime_status']) }}
+                                    </span>
+                                </td>
+                                <td class="p-4">
+                                    <p class="text-xs font-bold text-white">{{ $server['current_players'] }} / {{ $server['max_players'] }}</p>
+                                </td>
+                                <td class="p-4 text-right flex justify-end gap-2">
+                                    <button onclick="editServer({{ json_encode($server) }})" class="rounded-sm border border-slate-600 px-3 py-1.5 text-[9px] font-black uppercase tracking-widest text-slate-300 hover:border-white hover:text-white transition">
+                                        {{ __('Editar') }}
+                                    </button>
+                                    <form action="{{ route('admin.servers.delete', $server['id']) }}" method="POST" onsubmit="return confirm('¿Eliminar servidor?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="rounded-sm border border-red-500/50 bg-red-500/5 px-3 py-1.5 text-[9px] font-black uppercase tracking-widest text-red-400 hover:bg-red-500 hover:text-white transition">
+                                            {{ __('Borrar') }}
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
             </div>
         </div>
 
@@ -237,4 +204,143 @@
         </div>
     </div>
 </div>
+
+<!-- Create Server Modal -->
+<div id="server-modal-create" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 hidden">
+    <div class="w-full max-w-md bg-[#1b1b1b] border border-[#222222] p-8 rounded-sm shadow-2xl">
+        <h3 class="text-2xl font-black uppercase tracking-tighter text-white italic mb-6">{{ __('Añadir Servidor') }}</h3>
+        <form action="{{ route('admin.servers.store') }}" method="POST">
+            @csrf
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2">{{ __('Nombre') }}</label>
+                    <input type="text" name="name" required class="w-full bg-[#121212] border border-[#222222] rounded-sm px-4 py-2 text-sm text-white focus:border-[#5b7cff] outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2">{{ __('IP') }}</label>
+                        <input type="text" name="ip" value="127.0.0.1" required class="w-full bg-[#121212] border border-[#222222] rounded-sm px-4 py-2 text-sm text-white focus:border-[#5b7cff] outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2">{{ __('Puerto') }}</label>
+                        <input type="number" name="port" required class="w-full bg-[#121212] border border-[#222222] rounded-sm px-4 py-2 text-sm text-white focus:border-[#5b7cff] outline-none">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2">{{ __('Tipo') }}</label>
+                        <select name="type" class="w-full bg-[#121212] border border-[#222222] rounded-sm px-4 py-2 text-sm text-white focus:border-[#5b7cff] outline-none">
+                            <option value="mm">Matchmaking</option>
+                            <option value="public">Público</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2">{{ __('Estado') }}</label>
+                        <select name="status" class="w-full bg-[#121212] border border-[#222222] rounded-sm px-4 py-2 text-sm text-white focus:border-[#5b7cff] outline-none">
+                            <option value="online">Online</option>
+                            <option value="offline">Offline</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2">{{ __('Máx. Jugadores') }}</label>
+                        <input type="number" name="max_players" value="10" required class="w-full bg-[#121212] border border-[#222222] rounded-sm px-4 py-2 text-sm text-white focus:border-[#5b7cff] outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2">{{ __('RCON Password') }}</label>
+                        <input type="password" name="rcon_password" class="w-full bg-[#121212] border border-[#222222] rounded-sm px-4 py-2 text-sm text-white focus:border-[#5b7cff] outline-none">
+                    </div>
+                </div>
+            </div>
+            <div class="mt-8 flex justify-end gap-3">
+                <button type="button" onclick="document.getElementById('server-modal-create').classList.add('hidden')" class="px-4 py-2 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-white transition">
+                    {{ __('Cancelar') }}
+                </button>
+                <button type="submit" class="bg-[#5b7cff] px-6 py-2 rounded-sm text-[10px] font-black uppercase tracking-widest text-white hover:bg-[#7c5cff] transition">
+                    {{ __('Guardar') }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit Server Modal -->
+<div id="server-modal-edit" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 hidden">
+    <div class="w-full max-w-md bg-[#1b1b1b] border border-[#222222] p-8 rounded-sm shadow-2xl">
+        <h3 class="text-2xl font-black uppercase tracking-tighter text-white italic mb-6">{{ __('Editar Servidor') }}</h3>
+        <form id="edit-server-form" action="" method="POST">
+            @csrf
+            @method('PUT')
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2">{{ __('Nombre') }}</label>
+                    <input type="text" name="name" id="edit-name" required class="w-full bg-[#121212] border border-[#222222] rounded-sm px-4 py-2 text-sm text-white focus:border-[#5b7cff] outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2">{{ __('IP') }}</label>
+                        <input type="text" name="ip" id="edit-ip" required class="w-full bg-[#121212] border border-[#222222] rounded-sm px-4 py-2 text-sm text-white focus:border-[#5b7cff] outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2">{{ __('Puerto') }}</label>
+                        <input type="number" name="port" id="edit-port" required class="w-full bg-[#121212] border border-[#222222] rounded-sm px-4 py-2 text-sm text-white focus:border-[#5b7cff] outline-none">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2">{{ __('Tipo') }}</label>
+                        <select name="type" id="edit-type" class="w-full bg-[#121212] border border-[#222222] rounded-sm px-4 py-2 text-sm text-white focus:border-[#5b7cff] outline-none">
+                            <option value="mm">Matchmaking</option>
+                            <option value="public">Público</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2">{{ __('Estado') }}</label>
+                        <select name="status" id="edit-status" class="w-full bg-[#121212] border border-[#222222] rounded-sm px-4 py-2 text-sm text-white focus:border-[#5b7cff] outline-none">
+                            <option value="online">Online</option>
+                            <option value="offline">Offline</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2">{{ __('Máx. Jugadores') }}</label>
+                        <input type="number" name="max_players" id="edit-max-players" required class="w-full bg-[#121212] border border-[#222222] rounded-sm px-4 py-2 text-sm text-white focus:border-[#5b7cff] outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2">{{ __('RCON Password') }}</label>
+                        <input type="password" name="rcon_password" id="edit-rcon" placeholder="Dejar en blanco para no cambiar" class="w-full bg-[#121212] border border-[#222222] rounded-sm px-4 py-2 text-sm text-white focus:border-[#5b7cff] outline-none">
+                    </div>
+                </div>
+            </div>
+            <div class="mt-8 flex justify-end gap-3">
+                <button type="button" onclick="document.getElementById('server-modal-edit').classList.add('hidden')" class="px-4 py-2 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-white transition">
+                    {{ __('Cancelar') }}
+                </button>
+                <button type="submit" class="bg-[#5b7cff] px-6 py-2 rounded-sm text-[10px] font-black uppercase tracking-widest text-white hover:bg-[#7c5cff] transition">
+                    {{ __('Actualizar') }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function editServer(server) {
+        const modal = document.getElementById('server-modal-edit');
+        const form = document.getElementById('edit-server-form');
+        
+        form.action = `/admin/servers/${server.id}`;
+        document.getElementById('edit-name').value = server.name;
+        document.getElementById('edit-ip').value = server.ip;
+        document.getElementById('edit-port').value = server.port;
+        document.getElementById('edit-type').value = server.type;
+        document.getElementById('edit-status').value = server.status;
+        document.getElementById('edit-max-players').value = server.max_players;
+        document.getElementById('edit-rcon').value = ''; 
+        
+        modal.classList.remove('hidden');
+    }
+</script>
 @endsection

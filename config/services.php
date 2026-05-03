@@ -46,14 +46,6 @@ return [
         ))))),
     ],
 
-    'pterodactyl' => [
-        'panel_url' => env('PTERODACTYL_URL'),
-        'client_api_key' => env('PTERODACTYL_CLIENT_API_KEY'),
-        'application_api_key' => env('PTERODACTYL_APPLICATION_API_KEY'),
-        'account_email' => env('PTERODACTYL_ACCOUNT_EMAIL'),
-        'timeout' => env('PTERODACTYL_TIMEOUT', 5),
-    ],
-
     'csgoserver' => [
         'lock_dir' => env('CSGOSERVER_LOCK_DIR', '/var/www/afterreload/csgoserver/lgsm/lock'),
         'port_map' => [

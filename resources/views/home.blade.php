@@ -36,11 +36,7 @@
                                     <span class="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded-sm border border-[#5b7cff]/30 text-[#5b7cff] bg-[#5b7cff]/5 text-center">Matchmaking</span>
                                 @endif
                             </div>
-                            @if (!empty($server['ip']) && !empty($server['port']))
-                                <p class="text-[10px] text-slate-500 font-bold font-mono">IP: {{ $server['ip'] }}:{{ $server['port'] }}</p>
-                            @else
-                                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-[0.18em]">{{ __('Acceso por lobby') }}</p>
-                            @endif
+                            <p class="text-[10px] text-slate-500 font-bold uppercase tracking-[0.18em]">{{ __('Acceso por lobby') }}</p>
                         </div>
 
                         <div class="col-span-2 flex items-center justify-between md:justify-start mb-3 md:mb-0 border-t border-[#222222] pt-3 md:border-0 md:pt-0">
@@ -54,11 +50,7 @@
                         <div class="col-span-2 flex items-center justify-between md:justify-start mb-4 md:mb-0 border-t border-[#222222] pt-3 md:border-0 md:pt-0">
                             <span class="text-[10px] uppercase font-bold text-slate-600 md:hidden">{{ __('Jugadores') }}</span>
                             <div class="text-sm">
-                                @if ($isUnlimited)
-                                    <span class="flex items-center gap-2 text-emerald-400 font-bold"><span class="text-lg leading-none">∞</span><span class="text-[9px] uppercase tracking-[0.2em]">{{ __('Pública') }}</span></span>
-                                @else
-                                    <span class="font-bold text-white">{{ $server['current_players'] ?? 0 }}</span><span class="text-slate-600 ml-1">/ {{ $server['max_players'] ?? 0 }}</span>
-                                @endif
+                                <span class="font-bold text-white">{{ $server['current_players'] ?? 0 }}</span><span class="text-slate-600 ml-1">/ {{ $server['max_players'] ?? 0 }}</span>
                             </div>
                         </div>
 
@@ -99,9 +91,7 @@
             const isUnlimited = server.type === 'public';
             const players = Number(server.current_players ?? 0);
             const maxPlayers = Number(server.max_players ?? 0);
-            const addressLine = server.ip && server.port
-                ? `<p class="text-[10px] text-slate-500 font-bold font-mono">IP: ${escapeHtml(server.ip)}:${escapeHtml(String(server.port))}</p>`
-                : `<p class="text-[10px] text-slate-500 font-bold uppercase tracking-[0.18em]">{{ __('Acceso por lobby') }}</p>`;
+            const addressLine = `<p class="text-[10px] text-slate-500 font-bold uppercase tracking-[0.18em]">{{ __('Acceso por lobby') }}</p>`;
 
             return `
                 <div class="bg-[#1b1b1b] border border-[#222222] p-4 md:p-0 md:bg-transparent md:border-0 md:grid md:grid-cols-12 md:gap-4 md:items-center md:px-4 md:py-3 hover:bg-[#222222]/40 transition rounded-sm relative group">
@@ -126,9 +116,7 @@
                     <div class="col-span-2 flex items-center justify-between md:justify-start mb-4 md:mb-0 border-t border-[#222222] pt-3 md:border-0 md:pt-0">
                         <span class="text-[10px] uppercase font-bold text-slate-600 md:hidden">{{ __('Jugadores') }}</span>
                         <div class="text-sm">
-                            ${isUnlimited
-                                ? `<span class="font-bold text-white">${players}</span><span class="text-slate-600 ml-1">/ ∞</span>`
-                                : `<span class="font-bold text-white">${players}</span><span class="text-slate-600 ml-1">/ ${maxPlayers}</span>`}
+                            <span class="font-bold text-white">${players}</span><span class="text-slate-600 ml-1">/ ${maxPlayers}</span>
                         </div>
                     </div>
 

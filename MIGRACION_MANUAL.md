@@ -4,7 +4,7 @@ Como vas a usar GitHub para el código, esto es lo que **SÍ O SÍ** tienes que 
 
 ## 1. El archivo de Identidad (.env)
 **Ruta:** `/var/www/afterreload/.env`
-**Por qué:** Contiene las claves de Steam, la conexión a la DB y las API Keys de Pterodactyl. Sin esto, el Login de Steam dará error y la web no podrá hablar con los servidores.
+**Por qué:** Contiene las claves de Steam y la conexión a la DB. Sin esto, el Login de Steam dará error y la web no podrá funcionar correctamente.
 
 ## 2. Los Servidores de Juego (CS:GO Legacy)
 **Ruta:** `/var/www/afterreload/csgoserver/`
@@ -13,17 +13,13 @@ Como vas a usar GitHub para el código, esto es lo que **SÍ O SÍ** tienes que 
 - Toda la carpeta `serverfiles/` (especialmente `csgo/addons`, `csgo/cfg` y `csgo/maps`).
 - Los ejecutables de LinuxGSM (`linuxgsm.sh`, `csgoserver`, etc.).
 
-## 3. Configuración de Wings (Si no quieres re-vincular el nodo)
-**Ruta:** `/var/www/afterreload/.wings/etc/config.yml`
-**Por qué:** Aunque está en tu GitHub ahora (lo subimos antes), asegúrate de que en el nuevo VPS la IP coincida. Si la IP del VPS cambia, tendrás que editar este archivo y poner la IP nueva.
-
-## 4. Logos y Branding (Solo si no están en Git)
+## 3. Logos y Branding (Solo si no están en Git)
 He visto carpetas como `logos/` y `public/branding/`. Asegúrate de que se vean en el nuevo servidor. Si faltan imágenes, cópialas a mano.
 
 ---
 
 ## Pasos en el nuevo VPS:
-1. Instalar el entorno (PHP 8.3, Nginx, Redis, Docker).
+1. Instalar el entorno (PHP 8.3, Nginx, Redis).
 2. `git clone https://github.com/betanS/AfterReload.git`.
 3. **Copiar tu archivo `.env` viejo a la carpeta del nuevo.**
 4. Ejecutar `composer install` y `npm install`.

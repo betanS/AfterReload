@@ -52,10 +52,9 @@ Route::middleware('auth')->group(function () {
     Route::prefix('admin')->name('admin.')->group(function() {
         Route::get('/', [AdminController::class, 'index'])->name('index');
         Route::post('/servers', [AdminController::class, 'storeServer'])->name('servers.store');
-        Route::post('/servers/import', [AdminController::class, 'importServers'])->name('servers.import');
-        Route::post('/servers/{server}', [AdminController::class, 'updateServer'])->name('servers.update');
-        Route::post('/servers/{server}/sync', [AdminController::class, 'syncServer'])->name('servers.sync');
-        Route::post('/servers/{server}/power', [AdminController::class, 'powerServer'])->name('servers.power');
+        Route::post('/servers/clear-lobbies', [AdminController::class, 'clearLobbies'])->name('servers.clear-lobbies');
+        Route::put('/servers/{server}', [AdminController::class, 'updateServer'])->name('servers.update');
+        Route::delete('/servers/{server}', [AdminController::class, 'deleteServer'])->name('servers.delete');
         Route::post('/users/{user}/role', [AdminController::class, 'updateRole'])->name('users.role');
         Route::post('/users/{user}/ban', [AdminController::class, 'toggleBan'])->name('users.ban');
         Route::post('/users/{user}/unban', [AdminController::class, 'unban'])->name('users.unban');
