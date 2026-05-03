@@ -1,4 +1,4 @@
-
+@extends('layouts.app')
 
 @section('title', __('Lobby'))
 
@@ -41,8 +41,8 @@
         ])->values(),
     ];
 @endphp
-@extends('layouts.app')
-<div class="app-root min-h-screen bg-[#121212] text-slate-100 p-4 md:p-8">
+
+<div class="p-4 md:p-8">
     <div class="mx-auto max-w-7xl">
         <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div class="flex flex-wrap items-center gap-3">
@@ -238,8 +238,8 @@
     const readySection = document.getElementById('ready-section');
     const serverAddress = document.getElementById('server-address');
     const connectCommand = document.getElementById('connect-command');
-    const publicServerAddress = document.getElementById('public-server-address'); // Fixed typo
-    const publicConnectCommand = document.getElementById('public-connect-command'); // Fixed typo
+    const publicServerAddress = document.getElementById('public-server-address');
+    const publicConnectCommand = document.getElementById('public-connect-command');
     const joinMatchLink = document.getElementById('join-match-link');
     const publicJoinLink = document.getElementById('public-join-link');
     const toggleReadyBtn = document.getElementById('toggle-ready');
@@ -247,7 +247,7 @@
     const joinTBtn = document.getElementById('join-t');
     const joinPublicBtn = document.getElementById('join-public');
     const leaveLobbyBtn = document.getElementById('leave-lobby');
-    const backToServerLink = document.querySelector('a[href="{{ route('servers.index') }}"]'); // Select the "Back to servers" link
+    const backToServerLink = document.querySelector('a[href="{{ route('servers.index') }}"]');
 
     let pendingRequest = false;
 
@@ -364,17 +364,15 @@
     let currentLobbyState = @json($initialLobbyPayload);
 
     const applyPayload = (payload) => {
-        console.log('applyPayload: Received payload:', payload); // Debugging
         if (!payload || !payload.lobby || !Array.isArray(payload.users)) {
-            console.error('applyPayload: Invalid payload received.', payload); // Debugging
             return;
         }
 
-        currentLobbyState = payload; // Update global lobby state
+        currentLobbyState = payload; 
 
         const users = payload.users;
         const lobby = payload.lobby;
-        const currentUser = users.find((user) => user.is_current_user) ?? null; // Simplified currentUser check
+        const currentUser = users.find((user) => user.is_current_user) ?? null;
         const lobbyLocked = !!lobby.locked;
 
         if (playersCount) {
@@ -469,7 +467,6 @@
             readyPanel.classList.toggle('hidden', !showReadyPanel);
         }
         if (waitingPanel) {
-            // For public, hide waiting panel if user has joined a slot
             const hideWaitingForPublic = isUnlimitedLobby && !!currentUser;
             waitingPanel.classList.toggle('hidden', showReadyPanel || hideWaitingForPublic);
         }
@@ -480,14 +477,8 @@
     };
 
     const sendJson = async (url, body = {}, ignorePending = false) => {
-        if (pendingRequest && !ignorePending) {
-            console.log('sendJson: Request already pending.');
-            return null;
-        }
-
+        if (pendingRequest && !ignorePending) return null;
         pendingRequest = true;
-        console.log('sendJson: Sending request to', url, 'with body', body); // Debugging
-
         try {
             const response = await fetch(url, {
                 method: 'POST',
@@ -499,17 +490,8 @@
                 },
                 body: JSON.stringify(body),
             });
-
-            const payload = await response.json().catch(() => {
-                console.error('sendJson: Failed to parse JSON response. Raw response:', response); // Debugging
-                return {};
-            });
-
-            if (!response.ok) {
-                console.error('sendJson: Request failed with status', response.status, 'Payload:', payload); // Debugging
-                throw new Error(payload.message || 'request-failed');
-            }
-            console.log('sendJson: Request successful. Payload:', payload); // Debugging
+            const payload = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(payload.message || 'request-failed');
             return payload;
         } finally {
             pendingRequest = false;
@@ -526,101 +508,39 @@
                 },
                 cache: 'no-store',
             });
-
-            if (response.status === 409) {
-                window.location.href = urls.servers;
-                return;
+            if (response.status === 409) window.location.href = urls.servers;
+            if (response.ok) {
+                const payload = await response.json();
+                applyPayload(payload);
             }
-
-            if (!response.ok) {
-                throw new Error('status-failed');
-            }
-
-            const payload = await response.json();
-            applyPayload(payload);
-        } catch (_error) {
-            console.error('refreshStatus: Error refreshing lobby status.', _error); // Debugging
-        }
+        } catch (_error) {}
     };
 
-    if (joinCtBtn) {
-        joinCtBtn.addEventListener('click', async () => {
-            const payload = await sendJson(urls.team, { team: 'ct' });
-            if (payload) {
-                applyPayload(payload);
-            }
-        });
-    }
-
-    if (joinTBtn) {
-        joinTBtn.addEventListener('click', async () => {
-            const payload = await sendJson(urls.team, { team: 't' });
-            if (payload) {
-                applyPayload(payload);
-            }
-        });
-    }
-
-    if (toggleReadyBtn) {
-        toggleReadyBtn.addEventListener('click', async () => {
-            const payload = await sendJson(urls.ready);
-            if (payload) {
-                applyPayload(payload);
-            }
-        });
-    }
-
-    if (joinPublicBtn) {
-        joinPublicBtn.addEventListener('click', async () => {
-            console.log('joinPublicBtn: Clicked. Attempting to join public lobby.'); // Debugging
-            const payload = await sendJson(urls.team, { team: 'ct' }); // Use 'ct' as internal team for public lobbies
-            if (payload) {
-                applyPayload(payload);
-            }
-        });
-    }
-
-    if (leaveLobbyBtn) {
-        leaveLobbyBtn.addEventListener('click', async () => {
-            console.log('leaveLobbyBtn: Clicked. Attempting to leave lobby.'); // Debugging
-            const payload = await sendJson(urls.leave);
-            if (payload?.left) {
-                window.location.href = urls.servers;
-            }
-        });
-    }
+    if (joinCtBtn) joinCtBtn.addEventListener('click', async () => { const p = await sendJson(urls.team, { team: 'ct' }); if (p) applyPayload(p); });
+    if (joinTBtn) joinTBtn.addEventListener('click', async () => { const p = await sendJson(urls.team, { team: 't' }); if (p) applyPayload(p); });
+    if (toggleReadyBtn) toggleReadyBtn.addEventListener('click', async () => { const p = await sendJson(urls.ready); if (p) applyPayload(p); });
+    if (joinPublicBtn) joinPublicBtn.addEventListener('click', async () => { const p = await sendJson(urls.team, { team: 'ct' }); if (p) applyPayload(p); });
+    if (leaveLobbyBtn) leaveLobbyBtn.addEventListener('click', async () => { const p = await sendJson(urls.leave); if (p?.left) window.location.href = urls.servers; });
 
     if (backToServerLink) {
         backToServerLink.addEventListener('click', async (e) => {
-            e.preventDefault(); // Prevent default navigation
-            console.log('backToServerLink: Clicked. Attempting to leave lobby before redirect.'); // Debugging
-            const payload = await sendJson(urls.leave);
-            if (payload?.left) {
-                window.location.href = urls.servers; // Redirect after leaving
-            } else {
-                // If leaving failed, still redirect to avoid being stuck.
-                console.warn('backToServerLink: Failed to leave lobby, redirecting anyway.');
-                window.location.href = urls.servers;
-            }
+            e.preventDefault();
+            const p = await sendJson(urls.leave);
+            window.location.href = urls.servers;
         });
     }
 
     window.addEventListener('beforeunload', (e) => {
         const currentUserInLobby = currentLobbyState.users.find((user) => user.is_current_user);
         if (currentUserInLobby) {
-            console.log('beforeunload: User is in lobby, sending leave request.'); // Debugging
-            // Send leave request without waiting for response
-            sendJson(urls.leave, {}, true); // ignorePending to allow sending even if another request is in flight
-            
-            // Standard browser warning
-            e.preventDefault(); 
-            e.returnValue = ''; // Some browsers require returnValue to be set
-            return ''; // Message for some older browsers
+            sendJson(urls.leave, {}, true);
+            e.preventDefault();
+            e.returnValue = '';
         }
     });
 
-    applyPayload(currentLobbyState); // Use the global state here
-
+    applyPayload(currentLobbyState);
     window.setInterval(refreshStatus, 3000);
 })();
 </script>
+@endsection

@@ -50,10 +50,16 @@
                     <p class="mt-2 text-xs uppercase tracking-[0.2em] text-slate-500">{{ __('Control operativo de los nodos de juego.') }}</p>
                 </div>
                 <div class="flex gap-3">
-                    <form action="{{ route('admin.servers.clear-lobbies') }}" method="POST" onsubmit="return confirm('¿Seguro que quieres limpiar todos los lobbies de Matchmaking?')">
+                    <form action="{{ route('admin.servers.clear-lobbies', ['type' => 'mm']) }}" method="POST" onsubmit="return confirm('¿Seguro que quieres limpiar todos los lobbies de Matchmaking?')">
                         @csrf
                         <button type="submit" class="inline-flex items-center justify-center rounded-sm border border-red-500/50 bg-red-500/10 px-4 py-3 text-[10px] font-black uppercase tracking-widest text-red-400 transition hover:bg-red-500 hover:text-white">
-                            {{ __('Limpiar Lobbies MM') }}
+                            {{ __('Limpiar MM') }}
+                        </button>
+                    </form>
+                    <form action="{{ route('admin.servers.clear-lobbies', ['type' => 'public']) }}" method="POST" onsubmit="return confirm('¿Seguro que quieres limpiar todos los servidores Públicos?')">
+                        @csrf
+                        <button type="submit" class="inline-flex items-center justify-center rounded-sm border border-emerald-500/50 bg-emerald-500/10 px-4 py-3 text-[10px] font-black uppercase tracking-widest text-emerald-400 transition hover:bg-emerald-500 hover:text-white">
+                            {{ __('Limpiar Públicos') }}
                         </button>
                     </form>
                     <button onclick="document.getElementById('server-modal-create').classList.remove('hidden')" class="inline-flex items-center justify-center rounded-sm border border-[#5b7cff] bg-[#5b7cff] px-4 py-3 text-[10px] font-black uppercase tracking-widest text-white transition hover:bg-[#7c5cff]">

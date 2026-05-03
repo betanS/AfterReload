@@ -1,70 +1,59 @@
-# AfterReload - Guía Maestra de Migración y Optimización (Web)
-
-Este documento contiene todo lo necesario para levantar la web de AfterReload desde cero en un nuevo servidor con el máximo rendimiento.
+# Documentación Técnica: AfterReload
 
 ## 1. Requisitos del Sistema
-- **SO:** Ubuntu 22.04 LTS o superior.
-- **PHP 8.3:** Extensiones: `dom`, `curl`, `mbstring`, `zip`, `pcntl`, `bcmath`, `intl`, `gd`, `redis`.
-- **Base de Datos:** MariaDB 10.11+.
-- **Caché & Queue:** Redis Server (Obligatorio para Lobbies y rendimiento).
-- **Node.js 24 LTS & NPM.**
+- **PHP**: 8.3 (Extensiones: bcmath, ctype, fileinfo, json, mbstring, openssl, pdo, tokenizer, xml)
+- **Servicios**: Nginx, Redis, MySQL/SQLite
+- **Dependencias OS**: lib32gcc-s1, lib32stdc++6 (CS:GO Legacy)
 
-## 2. Instalación y Permisos
-```bash
-git clone https://github.com/betanS/AfterReload.git
-chown -R www-data:www-data storage bootstrap/cache
-chmod -R 775 storage bootstrap/cache
-composer install --optimize-autoloader --no-dev
-npm install && npm run build
-php artisan migrate --force
-```
+## 2. Configuración y Automatización
+Cron para tareas de limpieza y gestión (Usuario: `csgoserver`):
+`* * * * * cd /var/www/afterreload && php artisan schedule:run >> /dev/null 2>&1`
 
-## 3. Procesos de Fondo (Vital para Funcionalidad)
+## 3. Lógica de Lobbies y Servidores
+- **Públicos**: Gestión de slots dinámicos con salida automática vía JS.
+- **MM**: Matchmaking vía Get5 con limpieza automatizada en Admin.
+- **Seguridad**: RCON para comandos remotos vía `RconClient`.
 
-### A. Supervisor (Queues)
-Configura los workers para que los servidores se sincronicen al instante.
-Archivo: `/etc/supervisor/conf.d/afterreload-worker.conf`
-```ini
-[program:afterreload-worker]
-command=php /var/www/afterreload/artisan queue:work --sleep=3 --tries=3
-autostart=true
-autorestart=true
-user=www-data
-numprocs=2
-```
+## 7. IMPLEMENTACIÓN
 
-### B. Crontab (Tareas Programadas)
-```bash
-* * * * * cd /var/www/afterreload && php artisan schedule:run >> /dev/null 2>&1
-```
+### Estructura de directorios
+- `app/`: Lógica de negocio (Services, Http, Models).
+- `config/`: Configuraciones del sistema.
+- `database/`: Migraciones y seeders.
+- `resources/`: Vistas (Blade), CSS/JS.
+- `routes/`: Definición de endpoints web y API.
+- `csgoserver/`: Entorno de ejecución LinuxGSM.
 
-## 4. Optimización de Producción (.env)
-Para que la web cargue en <100ms:
-- `APP_DEBUG=false`
-- `APP_ENV=production`
-- `CACHE_STORE=redis`
-- `SESSION_DRIVER=redis`
-- `QUEUE_CONNECTION=redis`
+### Descripción de ficheros
+- `Server.php`: Modelo de gestión de servidores.
+- `LobbyController.php`: Lógica de gestión de slots y equipos.
+- `AdminController.php`: Panel de control de servidores y limpieza.
+- `RconClient.php`: Cliente para ejecución de comandos remotos en juegos.
 
-## 5. Configuración Nginx (SSL)
-```nginx
-server {
-    listen 443 ssl http2;
-    server_name afterreload.com;
-    root /var/www/afterreload/public;
-    index index.php;
+## 8. VALIDACIÓN Y PRUEBAS
 
-    location / {
-        try_files $uri $uri/ /index.php?$query_string;
-    }
+### Herramientas
+- **PHPUnit**: Framework para tests automatizados.
+- **Tinker**: Consola interactiva para depuración de DB en tiempo real.
+- **Consola del Navegador (F12)**: Para depuración de lobbies (Network/Console).
 
-    location ~ \.php$ {
-        include snippets/fastcgi-php.conf;
-        fastcgi_pass unix:/run/php/php8.3-fpm.sock;
-        fastcgi_buffering on;
-    }
-}
-```
+### Ejecución
+- Tests: `php artisan test`
+- Limpieza manual: Utilizar Dashboard Admin ("Limpiar MM" / "Limpiar Públicos").
 
----
-*Optimización de código: Se ha eliminado el bloqueo por API externa de skins y se ha pasado la lógica de carga de servidores a colas asíncronas.*
+## 9. RESULTADOS
+
+### Conclusiones
+- Se logró una gestión robusta de servidores CS:GO sin dependencias externas (Pterodactyl).
+- El sistema de lobbies dinámicos elimina la persistencia de "jugadores fantasma".
+- La centralización en el Panel Admin permite un mantenimiento rápido ante bloqueos.
+
+### Trabajos futuros
+- Implementación de un sistema de logs remoto para comandos RCON.
+- Refinamiento de la UI del dashboard con gráficos de uso en tiempo real.
+- Migración de las configuraciones de los servidores a un sistema de base de datos relacional.
+
+## 10. REFERENCIAS
+- [Laravel Documentation](https://laravel.com/docs)
+- [LinuxGSM Documentation](https://linuxgsm.com)
+- [Tailwind CSS Docs](https://tailwindcss.com)

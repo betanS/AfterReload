@@ -127,17 +127,27 @@ class AdminController extends Controller
         return back()->with('status', 'Servidor eliminado.');
     }
 
-    public function clearLobbies(): RedirectResponse
+    public function clearLobbies(Request $request): RedirectResponse
     {
-        $clearedCount = \DB::table('lobby_user')->delete();
+        $type = $request->string('type', 'mm');
         
-        // Reset player count on all servers
-        Server::query()->update(['current_players' => 0]);
+        // Clear lobby_user for lobbies associated with the specified server type
+        $query = \DB::table('lobby_user')
+            ->join('lobbies', 'lobby_user.lobby_id', '=', 'lobbies.id')
+            ->join('servers', 'lobbies.server_id', '=', 'servers.id')
+            ->where('servers.type', $type);
+            
+        $clearedCount = $query->delete();
         
-        // Reset all lobbies to waiting status
-        Lobby::query()->update(['status' => 'waiting', 'started_at' => null]);
+        // Reset player count on servers of the specified type
+        Server::where('type', $type)->update(['current_players' => 0]);
+        
+        // Reset lobby status
+        Lobby::whereHas('server', fn($q) => $q->where('type', $type))
+            ->update(['status' => 'waiting', 'started_at' => null]);
 
-        return back()->with('status', "Se han expulsado {$clearedCount} jugadores de todos los servidores y se han reiniciado los contadores.");
+        $msg = ($type === 'mm') ? "Matchmaking" : "Públicos";
+        return back()->with('status', "Se han expulsado {$clearedCount} jugadores de los servidores {$msg}.");
     }
 
     /**
