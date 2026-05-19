@@ -6,21 +6,15 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::table('servers', function (Blueprint $table) {
-            if (!Schema::hasColumn('servers', 'status')) {
+            if (! Schema::hasColumn('servers', 'status')) {
                 $table->string('status', 20)->default('online')->after('type');
             }
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::table('servers', function (Blueprint $table) {

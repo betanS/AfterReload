@@ -4,7 +4,6 @@
 
 @section('content')
 <div class="app-root min-h-screen bg-[#121212] text-slate-100 relative overflow-hidden">
-    <!-- Grid Background Pattern -->
     <div class="absolute inset-0 z-0 opacity-[0.03]" style="background-image: radial-gradient(#ffffff 1px, transparent 1px); background-size: 40px 40px;"></div>
     <div class="absolute inset-0 z-0 bg-gradient-to-b from-transparent via-[#121212]/50 to-[#121212]"></div>
 
@@ -43,7 +42,6 @@
                         </a>
                     </div>
                     
-                    <!-- Quick Stats -->
                     <div class="mt-20 grid grid-cols-3 gap-8 border-t border-[#222222] pt-12 max-w-lg">
                         <div>
                             <p class="text-2xl font-black text-white italic">1.2k+</p>
@@ -61,7 +59,6 @@
                 </div>
 
                 <div class="relative hidden lg:block">
-                    <!-- Dashboard Preview Mockup -->
                     <div class="rounded-sm border border-[#222222] bg-[#1b1b1b] shadow-[0_0_100px_-20px_rgba(0,0,0,0.8)] overflow-hidden relative z-10">
                         <div class="h-8 bg-[#222222] flex items-center gap-2 px-4 border-b border-[#333333]">
                             <div class="h-2 w-2 rounded-full bg-red-500/50"></div>
@@ -88,13 +85,11 @@
                         </div>
                     </div>
                     
-                    <!-- Glow behind mockup -->
                     <div class="absolute -inset-4 bg-[#5b7cff]/5 blur-3xl rounded-full"></div>
                 </div>
             </div>
         </div>
 
-        <!-- How it works -->
         <div id="features" class="bg-[#1b1b1b]/50 py-32 border-y border-[#222222]">
             <div class="mx-auto max-w-6xl px-6">
                 <div class="text-center mb-20">

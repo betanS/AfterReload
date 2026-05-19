@@ -7,15 +7,13 @@ use Illuminate\Database\Seeder;
 
 class AdminSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
         $steamId = trim((string) env('ADMIN_STEAM_ID'));
 
         if ($steamId === '') {
             $this->command?->warn('ADMIN_STEAM_ID not set. Skipping admin seeder.');
+
             return;
         }
 
@@ -23,6 +21,7 @@ class AdminSeeder extends Seeder
 
         if (! $user) {
             $this->command?->warn('No user found with ADMIN_STEAM_ID.');
+
             return;
         }
 

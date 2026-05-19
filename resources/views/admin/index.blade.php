@@ -18,7 +18,6 @@
             </div>
         </div>
 
-        <!-- Quick Stats -->
         <div class="grid grid-cols-1 md:grid-cols-5 gap-6 mb-12">
             <div class="bg-[#1b1b1b] border border-[#222222] p-6 rounded-sm shadow-xl">
                 <p class="text-[10px] uppercase font-bold text-slate-500 tracking-widest mb-2">{{ __('Total Usuarios') }}</p>
@@ -42,7 +41,6 @@
             </div>
         </div>
 
-        <!-- Servers Management -->
         <div class="mb-12 rounded-sm border border-[#222222] bg-[#1b1b1b] shadow-2xl overflow-hidden">
             <div class="flex flex-col gap-4 border-b border-[#222222] bg-[#1b1b1b] p-6 md:flex-row md:items-center md:justify-between">
                 <div>
@@ -127,7 +125,6 @@
             </div>
         </div>
 
-        <!-- Users Table -->
         <div class="rounded-sm border border-[#222222] bg-[#1b1b1b] shadow-2xl overflow-hidden">
             <div class="p-6 border-b border-[#222222] flex justify-between items-center bg-[#1b1b1b]">
                 <h3 class="font-black uppercase tracking-widest text-white text-sm italic">{{ __('Usuarios Registrados') }}</h3>
@@ -156,7 +153,10 @@
                                         <img src="{{ $user->avatar }}" alt="Avatar" class="h-8 w-8 rounded-sm border border-[#222222]">
                                         <div class="leading-tight">
                                             <p class="font-bold text-white">{{ $user->steam_nickname ?? $user->name }}</p>
-                                            <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">{{ $user->rank_points }} RP</p>
+                                            <div class="flex gap-2 mt-0.5">
+                                                <p class="text-[9px] text-slate-500 font-bold uppercase tracking-widest">{{ $user->points }} PTS</p>
+                                                <p class="text-[9px] text-[#5b7cff] font-bold uppercase tracking-widest">{{ $user->credits }} CRD</p>
+                                            </div>
                                         </div>
                                     </div>
                                 </td>
@@ -172,32 +172,51 @@
                                     </form>
                                 </td>
                                 <td class="p-4">
-                                    @if($user->banned_at)
-                                        <span class="px-2 py-1 rounded-sm bg-red-500/10 border border-red-500/20 text-[9px] font-black uppercase tracking-widest text-red-500">
-                                            {{ __('Baneado') }}
-                                        </span>
-                                    @else
-                                        <span class="px-2 py-1 rounded-sm bg-emerald-500/10 border border-emerald-500/20 text-[9px] font-black uppercase tracking-widest text-emerald-500">
-                                            {{ __('Activo') }}
-                                        </span>
-                                    @endif
+                                    <div class="flex items-center gap-2">
+                                        @if($user->banned_at)
+                                            <span class="px-2 py-1 rounded-sm bg-red-500/10 border border-red-500/20 text-[9px] font-black uppercase tracking-widest text-red-500">
+                                                {{ __('Baneado') }}
+                                            </span>
+                                        @else
+                                            <span class="px-2 py-1 rounded-sm bg-emerald-500/10 border border-emerald-500/20 text-[9px] font-black uppercase tracking-widest text-emerald-500">
+                                                {{ __('Activo') }}
+                                            </span>
+                                        @endif
+                                    </div>
                                 </td>
                                 <td class="p-4 text-right">
-                                    @if($user->banned_at)
-                                        <form action="{{ route('admin.users.unban', $user) }}" method="POST" class="inline-block">
+                                    <div class="flex items-center justify-end gap-3">
+                                        <form action="{{ route('admin.users.stats', $user) }}" method="POST" class="flex items-center gap-1">
                                             @csrf
-                                            <button type="submit" class="rounded-sm border border-emerald-500 bg-emerald-500/5 px-3 py-1.5 text-[9px] font-black uppercase tracking-widest text-emerald-400 hover:bg-emerald-500 hover:text-white transition">
-                                                {{ __('Desbanear') }}
+                                            <div class="flex flex-col gap-1">
+                                                <input type="number" name="points" value="{{ $user->points }}" placeholder="PTS" class="w-14 bg-[#121212] border border-[#333333] rounded-sm px-1.5 py-1 text-[10px] text-white focus:border-[#5b7cff] outline-none" title="Puntos">
+                                                <input type="number" name="credits" value="{{ $user->credits }}" placeholder="CRD" class="w-14 bg-[#121212] border border-[#333333] rounded-sm px-1.5 py-1 text-[10px] text-white focus:border-[#5b7cff] outline-none" title="Créditos">
+                                            </div>
+                                            <button type="submit" class="rounded-sm border border-[#5b7cff] bg-[#5b7cff]/10 p-2 text-[#5b7cff] hover:bg-[#5b7cff] hover:text-white transition" title="Guardar Cambios">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                                </svg>
                                             </button>
                                         </form>
-                                    @else
-                                        <form action="{{ route('admin.users.ban', $user) }}" method="POST" class="inline-block">
-                                            @csrf
-                                            <button type="submit" class="rounded-sm border border-red-500 bg-red-500/5 px-3 py-1.5 text-[9px] font-black uppercase tracking-widest text-red-400 hover:bg-red-500 hover:text-white transition">
-                                                {{ __('Banear') }}
-                                            </button>
-                                        </form>
-                                    @endif
+
+                                        <div class="flex flex-col gap-1">
+                                            @if($user->banned_at)
+                                                <form action="{{ route('admin.users.unban', $user) }}" method="POST" class="inline-block">
+                                                    @csrf
+                                                    <button type="submit" class="w-full rounded-sm border border-emerald-500 bg-emerald-500/5 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-emerald-400 hover:bg-emerald-500 hover:text-white transition">
+                                                        {{ __('Desbanear') }}
+                                                    </button>
+                                                </form>
+                                            @else
+                                                <form action="{{ route('admin.users.ban', $user) }}" method="POST" class="inline-block">
+                                                    @csrf
+                                                    <button type="submit" class="w-full rounded-sm border border-red-500 bg-red-500/5 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-red-400 hover:bg-red-500 hover:text-white transition">
+                                                        {{ __('Banear') }}
+                                                    </button>
+                                                </form>
+                                            @endif
+                                        </div>
+                                    </div>
                                 </td>
                             </tr>
                         @endforeach
@@ -211,7 +230,6 @@
     </div>
 </div>
 
-<!-- Create Server Modal -->
 <div id="server-modal-create" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 hidden">
     <div class="w-full max-w-md bg-[#1b1b1b] border border-[#222222] p-8 rounded-sm shadow-2xl">
         <h3 class="text-2xl font-black uppercase tracking-tighter text-white italic mb-6">{{ __('Añadir Servidor') }}</h3>
@@ -271,7 +289,6 @@
     </div>
 </div>
 
-<!-- Edit Server Modal -->
 <div id="server-modal-edit" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 hidden">
     <div class="w-full max-w-md bg-[#1b1b1b] border border-[#222222] p-8 rounded-sm shadow-2xl">
         <h3 class="text-2xl font-black uppercase tracking-tighter text-white italic mb-6">{{ __('Editar Servidor') }}</h3>

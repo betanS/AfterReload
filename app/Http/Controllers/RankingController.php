@@ -7,13 +7,10 @@ use Illuminate\View\View;
 
 class RankingController extends Controller
 {
-    /**
-     * Muestra el ranking de los mejores 50 jugadores.
-     */
     public function index(): View
     {
         $players = User::whereNotNull('steam_id')
-            ->orderByDesc('rank_points')
+            ->orderByDesc('points')
             ->take(50)
             ->get();
 

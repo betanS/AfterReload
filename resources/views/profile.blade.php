@@ -29,7 +29,7 @@
             <div class="rounded-sm border border-[#222222] bg-[#121212] p-6 group hover:border-[#5b7cff]/40 transition">
                 <p class="text-[10px] uppercase font-bold tracking-[0.2em] text-[#5b7cff] mb-2">{{ __('Puntos de rango') }}</p>
                 <div class="flex items-end gap-2">
-                    <p class="text-3xl font-black text-white italic tracking-tighter">{{ auth()->user()->rank_points }}</p>
+                    <p class="text-3xl font-black text-white italic tracking-tighter">{{ auth()->user()->points }}</p>
                     <p class="text-xs text-slate-500 font-bold mb-1 uppercase tracking-widest">ELO</p>
                 </div>
             </div>
@@ -37,7 +37,7 @@
             <div class="rounded-sm border border-[#222222] bg-[#121212] p-6 group hover:border-white/20 transition">
                 <p class="text-[10px] uppercase font-bold tracking-[0.2em] text-slate-500 mb-2">{{ __('Créditos AfterReload') }}</p>
                 <div class="flex items-end gap-2">
-                    <p class="text-3xl font-black text-white italic tracking-tighter">{{ auth()->user()->blue_credits }}</p>
+                    <p class="text-3xl font-black text-white italic tracking-tighter">{{ auth()->user()->credits }}</p>
                     <p class="text-xs text-slate-500 font-bold mb-1 uppercase tracking-widest">CR</p>
                 </div>
             </div>

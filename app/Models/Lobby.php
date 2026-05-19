@@ -11,9 +11,6 @@ class Lobby extends Model
 {
     use HasFactory;
 
-    /**
-     * @var list<string>
-     */
     protected $fillable = [
         'server_id',
         'name',
@@ -22,17 +19,11 @@ class Lobby extends Model
         'started_at',
     ];
 
-    /**
-     * @return BelongsTo<Server, Lobby>
-     */
     public function server(): BelongsTo
     {
         return $this->belongsTo(Server::class);
     }
 
-    /**
-     * @return BelongsToMany<User, Lobby>
-     */
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class)->withPivot('team', 'is_ready')->withTimestamps();

@@ -15,12 +15,11 @@ class LobbyUpdated implements ShouldBroadcastNow
     public function __construct(
         public int $serverId,
         public array $payload
-    ) {
-    }
+    ) {}
 
     public function broadcastOn(): Channel
     {
-        return new Channel('lobby.' . $this->serverId);
+        return new Channel('lobby.'.$this->serverId);
     }
 
     public function broadcastAs(): string

@@ -4,14 +4,6 @@ namespace App\Services;
 
 class RconClient
 {
-    /**
-     * @param  string  $host
-     * @param  int  $port
-     * @param  string  $password
-     * @param  string  $command
-     * @param  float  $timeoutSeconds
-     * @return string|null
-     */
     public function send(string $host, int $port, string $password, string $command, float $timeoutSeconds = 1.5): ?string
     {
         if ($host === '' || $port <= 0 || $password === '') {
@@ -28,7 +20,6 @@ class RconClient
         $authId = 1;
         $this->writePacket($socket, $authId, 3, $password);
 
-        // Auth response usually comes in two packets; read a couple safely.
         $authOk = false;
         for ($i = 0; $i < 2; $i++) {
             $packet = $this->readPacket($socket);
@@ -44,6 +35,7 @@ class RconClient
 
         if (! $authOk) {
             fclose($socket);
+
             return null;
         }
 
@@ -51,7 +43,6 @@ class RconClient
         $this->writePacket($socket, $cmdId, 2, $command);
 
         $response = '';
-        // Read until timeout or another packet with same id
         while (true) {
             $packet = $this->readPacket($socket);
             if ($packet === null) {
@@ -68,25 +59,18 @@ class RconClient
         return $response !== '' ? $response : null;
     }
 
-    /**
-     * @param  resource  $socket
-     */
     private function writePacket($socket, int $id, int $type, string $body): void
     {
         $payload = pack('V', $id)
-            . pack('V', $type)
-            . $body
-            . "\x00\x00";
+            .pack('V', $type)
+            .$body
+            ."\x00\x00";
 
-        $packet = pack('V', strlen($payload)) . $payload;
+        $packet = pack('V', strlen($payload)).$payload;
 
         fwrite($socket, $packet);
     }
 
-    /**
-     * @param  resource  $socket
-     * @return array{id:int, type:int, body:string}|null
-     */
     private function readPacket($socket): ?array
     {
         $sizeData = fread($socket, 4);

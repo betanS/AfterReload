@@ -11,7 +11,6 @@
         </div>
 
         <div id="servers-table">
-            <!-- Header for desktop -->
             <div class="hidden md:grid grid-cols-12 gap-4 bg-[#222222] p-4 rounded-sm mb-2 text-[10px] uppercase font-bold tracking-widest text-slate-500 border border-[#333333]">
                 <div class="col-span-5">{{ __('Servidor') }}</div>
                 <div class="col-span-2">{{ __('Estado') }}</div>
@@ -19,7 +18,6 @@
                 <div class="col-span-3 text-right">{{ __('Acción') }}</div>
             </div>
             
-            <!-- Container for rows -->
             <div id="servers-body" class="space-y-3 md:space-y-1">
                 @forelse ($servers as $server)
                     @php

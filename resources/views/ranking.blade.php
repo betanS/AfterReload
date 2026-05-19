@@ -40,7 +40,7 @@
                                 </div>
                             </td>
                             <td class="p-4">
-                                <span class="font-black text-xl text-white italic tracking-tighter">{{ $player->rank_points }}</span>
+                                <span class="font-black text-xl text-white italic tracking-tighter">{{ $player->points }}</span>
                                 <span class="text-[10px] text-[#5b7cff] font-bold uppercase ml-1">RP</span>
                             </td>
                             <td class="p-4 text-right">

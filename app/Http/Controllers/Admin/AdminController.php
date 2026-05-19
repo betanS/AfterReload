@@ -3,13 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Lobby;
 use App\Models\Server;
 use App\Models\User;
-use App\Models\Lobby;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
-use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
 {
@@ -36,7 +35,7 @@ class AdminController extends Controller
         $activeLobbies = \App\Models\Lobby::where('status', 'waiting')->count();
         $totalServers = \App\Models\Server::count();
         $totalMatches = \App\Models\MatchResult::count();
-        
+
         $servers = Server::query()
             ->orderByRaw("case when type = 'public' then 0 when type = 'mm' then 1 else 2 end")
             ->orderBy('port')
@@ -130,29 +129,39 @@ class AdminController extends Controller
     public function clearLobbies(Request $request): RedirectResponse
     {
         $type = $request->string('type', 'mm');
-        
-        // Clear lobby_user for lobbies associated with the specified server type
+
         $query = \DB::table('lobby_user')
             ->join('lobbies', 'lobby_user.lobby_id', '=', 'lobbies.id')
             ->join('servers', 'lobbies.server_id', '=', 'servers.id')
             ->where('servers.type', $type);
-            
+
         $clearedCount = $query->delete();
-        
-        // Reset player count on servers of the specified type
+
         Server::where('type', $type)->update(['current_players' => 0]);
-        
-        // Reset lobby status
-        Lobby::whereHas('server', fn($q) => $q->where('type', $type))
+
+        Lobby::whereHas('server', fn ($q) => $q->where('type', $type))
             ->update(['status' => 'waiting', 'started_at' => null]);
 
-        $msg = ($type === 'mm') ? "Matchmaking" : "Públicos";
+        $msg = ($type === 'mm') ? 'Matchmaking' : 'Públicos';
+
         return back()->with('status', "Se han expulsado {$clearedCount} jugadores de los servidores {$msg}.");
     }
 
-    /**
-     * @return array<string, mixed>
-     */
+    public function updateStats(Request $request, User $user): RedirectResponse
+    {
+        $validated = $request->validate([
+            'points' => 'required|integer|min:0',
+            'credits' => 'required|integer|min:0',
+        ]);
+
+        $user->update([
+            'points' => $validated['points'],
+            'credits' => $validated['credits'],
+        ]);
+
+        return back()->with('status', 'Estadísticas actualizadas correctamente.');
+    }
+
     private function validatedServerData(Request $request): array
     {
         $data = $request->validate([

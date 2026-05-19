@@ -70,24 +70,19 @@ class Get5Controller extends Controller
         $winnerTeam = $winner === 'team1' ? $team1Players : ($winner === 'team2' ? $team2Players : []);
         $loserTeam = $winner === 'team1' ? $team2Players : ($winner === 'team2' ? $team1Players : []);
 
-        // Only apply points on series end to avoid double points in multi-map matches
         if (in_array($eventName, ['series_result', 'series_end'], true)) {
             $server = Server::find($serverId);
-            
+
             if ($server) {
                 if ($server->type === 'mm') {
-                    // Standard MM Rewards
-                    $this->applyPoints($winnerTeam, 10);
-                    $this->applyPoints($loserTeam, -5);
+                    $this->applyPoints($winnerTeam, 5, 2);
+                    $this->applyPoints($loserTeam, -4, 0);
                 } elseif ($server->type === 'public' || $server->type === 'csgo') {
-                    // Public/Casual Rewards: +1 for winners, 0 for losers
-                    // This applies to anyone Get5 reports as part of the team at the end
-                    $this->applyPoints($winnerTeam, 1);
-                    $this->applyPoints($loserTeam, 0);
+                    $this->applyPoints($winnerTeam, 5, 2);
+                    $this->applyPoints($loserTeam, -4, 0);
                 }
             }
 
-            // Kick everyone from the lobby (only for MM lobbies, public ones are fluid)
             $lobby = Lobby::query()
                 ->where('server_id', $serverId)
                 ->where('status', 'live')
@@ -96,21 +91,18 @@ class Get5Controller extends Controller
 
             if ($lobby) {
                 if ($server && $server->type === 'mm') {
-                    $lobby->users()->detach(); // Remove everyone from MM lobby
+                    $lobby->users()->detach();
                 }
-                
+
                 $lobby->update(['status' => 'completed']);
 
-                // Close the match record too
                 LobbyMatch::query()
                     ->where('lobby_id', $lobby->id)
                     ->whereIn('status', ['pending', 'live'])
                     ->update(['status' => 'completed']);
 
-                // Clear server player count
                 Server::query()->where('id', $serverId)->update(['current_players' => 0]);
 
-                // Re-enable skin commands
                 $server = $lobby->server;
                 if ($server) {
                     $rcon = app(\App\Services\RconClient::class);
@@ -125,7 +117,8 @@ class Get5Controller extends Controller
                         $rcon->send($rconHost, $rconPort, $rconPassword, 'sm_weapons_table_prefix ""');
                     }
                 }
-            }        }
+            }
+        }
 
         return response()->json(['status' => 'processed']);
     }
@@ -149,9 +142,6 @@ class Get5Controller extends Controller
         }
     }
 
-    /**
-     * @return array<string, mixed>
-     */
     public function buildOrCreateLobbyMatch(Lobby $lobby): array
     {
         $server = $lobby->server;
@@ -221,10 +211,6 @@ class Get5Controller extends Controller
         return $config;
     }
 
-    /**
-     * @param  array<string, mixed>  $team
-     * @return array<int, string>
-     */
     private function extractPlayers(array $team): array
     {
         $players = $team['players'] ?? [];
@@ -247,10 +233,7 @@ class Get5Controller extends Controller
         return [];
     }
 
-    /**
-     * @param  array<int, string>  $steamIds
-     */
-    protected function applyPoints(array $steamIds, int $delta): void
+    protected function applyPoints(array $steamIds, int $deltaPoints, int $deltaCredits = 0): void
     {
         if (empty($steamIds)) {
             return;
@@ -259,29 +242,24 @@ class Get5Controller extends Controller
         User::query()
             ->whereIn('steam_id', $steamIds)
             ->get()
-            ->each(function (User $user) use ($delta) {
-                $next = $user->rank_points + $delta;
+            ->each(function (User $user) use ($deltaPoints, $deltaCredits) {
+                $nextPoints = max(0, $user->points + $deltaPoints);
+                $nextCredits = max(0, $user->credits + $deltaCredits);
+
                 $user->update([
-                    'rank_points' => max(0, $next),
+                    'points' => $nextPoints,
+                    'credits' => $deltaCredits !== 0 ? $nextCredits : $user->credits,
                 ]);
 
-                // Sync with LevelsRanks on the server
-                $this->syncLevelRanks($user->steam_id, max(0, $next));
+                $this->syncLevelRanks($user->steam_id, $nextPoints);
             });
     }
 
-    /**
-     * Synchronize points with the LevelsRanks database.
-     */
     private function syncLevelRanks(string $steamId, int $points): void
     {
         try {
             $conn = \Illuminate\Support\Facades\DB::connection('server');
 
-            // SteamID in LevelRanks (lvl_base) is usually SteamID2 or SteamID3
-            // but we'll try to match it. If the server uses SteamID64, we use that.
-            // Most modern LR versions use SteamID64 or match whatever is provided.
-            
             $exists = $conn->table('lvl_base')->where('steam', $steamId)->exists();
 
             if ($exists) {
@@ -289,9 +267,6 @@ class Get5Controller extends Controller
                     ->where('steam', $steamId)
                     ->update(['value' => $points]);
             } else {
-                // If they don't exist, we can't easily create them because LR 
-                // requires other fields (name, etc.), but we'll try a basic insert 
-                // if the table allows it.
                 $conn->table('lvl_base')->insertOrIgnore([
                     'steam' => $steamId,
                     'value' => $points,
@@ -300,7 +275,7 @@ class Get5Controller extends Controller
                 ]);
             }
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error("LevelRanks Sync Failed for {$steamId}: " . $e->getMessage());
+            \Illuminate\Support\Facades\Log::error("LevelRanks Sync Failed for {$steamId}: ".$e->getMessage());
         }
     }
 }

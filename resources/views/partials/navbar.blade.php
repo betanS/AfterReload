@@ -1,6 +1,5 @@
 <nav class="relative z-50 bg-[#121212] border-b border-[#222222]">
     <div class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-        <!-- Logo -->
         <div class="flex items-center">
             <a href="{{ route('welcome') }}" class="flex items-center gap-3">
                 <img src="{{ asset('branding/minilogoWithBg.png') }}" alt="AfterReload" class="h-10 w-10 rounded-sm">
@@ -11,7 +10,6 @@
             </a>
         </div>
 
-        <!-- Desktop Navigation & User -->
         <div class="hidden lg:flex items-center gap-6">
             @auth
                 <div class="flex items-center gap-4">
@@ -39,12 +37,12 @@
                     <div class="flex items-center gap-3 rounded-sm border border-[#222222] bg-[#1b1b1b] px-3 py-1.5 text-[11px]">
                         <div class="flex flex-col leading-tight">
                             <span class="text-slate-500 uppercase text-[9px] font-bold">Rango</span>
-                            <span class="font-bold text-white">{{ auth()->user()->rank_points }}</span>
+                            <span class="font-bold text-white">{{ auth()->user()->points }}</span>
                         </div>
                         <div class="h-6 w-px bg-[#222222]"></div>
                         <div class="flex flex-col leading-tight">
                             <span class="text-slate-500 uppercase text-[9px] font-bold">Credits</span>
-                            <span class="font-bold text-white">{{ auth()->user()->blue_credits }}</span>
+                            <span class="font-bold text-white">{{ auth()->user()->credits }}</span>
                         </div>
                     </div>
 
@@ -74,11 +72,10 @@
             @endauth
         </div>
 
-        <!-- Mobile Menu Button -->
         <div class="lg:hidden flex items-center gap-3">
             @auth
                 <div class="flex items-center gap-2 rounded-sm border border-[#222222] bg-[#1b1b1b] px-2 py-1 text-[10px]">
-                    <span class="font-bold text-[#5b7cff]">{{ auth()->user()->rank_points }} RP</span>
+                    <span class="font-bold text-[#5b7cff]">{{ auth()->user()->points }} PTS</span>
                 </div>
             @endauth
             
@@ -91,7 +88,6 @@
         </div>
     </div>
 
-    <!-- Mobile Menu Overlay -->
     <div id="mobile-menu" class="hidden lg:hidden border-t border-[#222222] bg-[#121212] px-6 py-8">
         @auth
             <div class="flex flex-col gap-6">
@@ -106,11 +102,11 @@
                 <div class="grid grid-cols-2 gap-3">
                     <div class="rounded-sm border border-[#222222] bg-[#1b1b1b] p-4">
                         <p class="text-[10px] text-slate-500 uppercase font-bold mb-1">Puntos</p>
-                        <p class="text-xl font-black text-[#5b7cff]">{{ auth()->user()->rank_points }}</p>
+                        <p class="text-xl font-black text-[#5b7cff]">{{ auth()->user()->points }}</p>
                     </div>
                     <div class="rounded-sm border border-[#222222] bg-[#1b1b1b] p-4">
                         <p class="text-[10px] text-slate-500 uppercase font-bold mb-1">Créditos</p>
-                        <p class="text-xl font-black text-white">{{ auth()->user()->blue_credits }}</p>
+                        <p class="text-xl font-black text-white">{{ auth()->user()->credits }}</p>
                     </div>
                 </div>
 

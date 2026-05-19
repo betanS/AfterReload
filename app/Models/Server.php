@@ -11,9 +11,6 @@ class Server extends Model
 {
     use HasFactory;
 
-    /**
-     * @var list<string>
-     */
     protected $fillable = [
         'name',
         'ip',
@@ -25,9 +22,6 @@ class Server extends Model
         'current_players',
     ];
 
-    /**
-     * @return HasMany<Lobby>
-     */
     public function lobbies(): HasMany
     {
         return $this->hasMany(Lobby::class);
@@ -49,6 +43,7 @@ class Server extends Model
 
         if ($socket) {
             fclose($socket);
+
             return true;
         }
 

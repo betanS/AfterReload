@@ -2,18 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Server;
 use App\Models\Lobby;
+use App\Models\Server;
+use App\Services\PublicMatchResultProcessor;
 use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
 
 class ServerController extends Controller
 {
-    /**
-     * Muestra la vista principal de servidores.
-     */
     public function index(): View
     {
+        app(PublicMatchResultProcessor::class)->process();
+
         $servers = $this->buildServersPayload();
 
         return view('home', [
@@ -21,20 +21,15 @@ class ServerController extends Controller
         ]);
     }
 
-    /**
-     * Devuelve los datos de los servidores en formato JSON.
-     * Actualiza el conteo de jugadores basado en los lobbies activos.
-     */
     public function data(): JsonResponse
     {
+        app(PublicMatchResultProcessor::class)->process();
+
         return response()->json([
             'servers' => $this->buildServersPayload(),
         ]);
     }
 
-    /**
-     * @return array<int, array<string, mixed>>
-     */
     private function buildServersPayload(): array
     {
         return Server::query()

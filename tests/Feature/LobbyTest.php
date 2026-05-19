@@ -23,7 +23,7 @@ class LobbyTest extends TestCase
         ]);
 
         $this->actingAs($user);
-        
+
         $response = $this->get(route('lobby.show', $server));
 
         $response->assertStatus(200);

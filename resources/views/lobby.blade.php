@@ -34,7 +34,7 @@
             'id' => $user->id,
             'name' => $user->steam_nickname ?? $user->name,
             'avatar' => $user->avatar,
-            'rank_points' => $user->rank_points,
+            'points' => $user->points,
             'team' => $user->pivot?->team,
             'is_ready' => (bool) $user->pivot?->is_ready,
             'is_current_user' => $user->id === Auth::id(),
@@ -46,7 +46,7 @@
     <div class="mx-auto max-w-7xl">
         <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div class="flex flex-wrap items-center gap-3">
-                <a href="{{ route('servers.index') }}" class="inline-flex items-center rounded-sm border border-[#222222] bg-[#1b1b1b] px-4 py-2 text-sm font-semibold uppercase tracking-wider text-slate-200 transition hover:border-[#333333]">
+                <a id="back-to-servers" href="{{ route('servers.index') }}" class="inline-flex items-center rounded-sm border border-[#222222] bg-[#1b1b1b] px-4 py-2 text-sm font-semibold uppercase tracking-wider text-slate-200 transition hover:border-[#333333]">
                     {{ __('Volver a servidores') }}
                 </a>
                 <span class="rounded-sm border border-[#222222] bg-[#1b1b1b] px-3 py-2 text-xs font-bold uppercase tracking-widest text-[#5b7cff]">
@@ -85,7 +85,7 @@
                                         <img src="{{ $player->avatar }}" alt="Avatar {{ $player->steam_nickname ?? $player->name }}" class="h-8 w-8 rounded-sm border border-[#5b7cff]/40 md:h-10 md:w-10">
                                         <div class="min-w-0 flex-1">
                                             <p class="truncate text-sm font-bold text-white">{{ $player->steam_nickname ?? $player->name }}</p>
-                                            <p class="text-[10px] font-semibold uppercase tracking-tighter text-slate-500 md:text-xs">Elo: {{ $player->rank_points }}</p>
+                                            <p class="text-[10px] font-semibold uppercase tracking-tighter text-slate-500 md:text-xs">Elo: {{ $player->points }}</p>
                                         </div>
                                         @if($player->pivot?->is_ready)
                                             <span class="absolute right-2 top-2 text-emerald-500" title="{{ __('Listo') }}">
@@ -111,7 +111,7 @@
                                         <img src="{{ $player->avatar }}" alt="Avatar {{ $player->steam_nickname ?? $player->name }}" class="h-8 w-8 rounded-sm border border-red-500/40 md:h-10 md:w-10">
                                         <div class="min-w-0 flex-1">
                                             <p class="truncate text-sm font-bold text-white">{{ $player->steam_nickname ?? $player->name }}</p>
-                                            <p class="text-[10px] font-semibold uppercase tracking-tighter text-slate-500 md:text-xs">Elo: {{ $player->rank_points }}</p>
+                                            <p class="text-[10px] font-semibold uppercase tracking-tighter text-slate-500 md:text-xs">Elo: {{ $player->points }}</p>
                                         </div>
                                         @if($player->pivot?->is_ready)
                                             <span class="absolute right-2 top-2 text-emerald-500" title="{{ __('Listo') }}">
@@ -136,7 +136,6 @@
                             </button>
 
                             <div id="generic-list" class="grid gap-2 md:gap-3 sm:grid-cols-2">
-                                <!-- JS rendered slots -->
                             </div>
                         </div>
                     </div>
@@ -149,7 +148,7 @@
                         <p class="mb-1 text-[10px] font-bold uppercase tracking-widest text-[#5b7cff]">{{ __('IP pública del servidor') }}</p>
                         <p id="public-server-address" class="break-all rounded-sm border border-[#222222] bg-[#121212] p-2 font-mono text-sm text-white">{{ $server->ip }}:{{ $server->port }}</p>
                         <p id="public-connect-command" class="mt-2 break-all font-mono text-[10px] text-slate-500 md:text-xs">connect {{ $server->ip }}:{{ $server->port }}</p>
-                        <a id="public-join-link" href="steam://connect/{{ $server->ip }}:{{ $server->port }}" class="mt-4 inline-block w-full rounded-sm bg-[#5b7cff] px-4 py-3 text-center text-xs font-bold uppercase tracking-widest text-white shadow-lg shadow-black/40 transition hover:bg-[#7c5cff]">
+                        <a id="public-join-link" data-lobby-connect-link href="steam://connect/{{ $server->ip }}:{{ $server->port }}" class="mt-4 inline-block w-full rounded-sm bg-[#5b7cff] px-4 py-3 text-center text-xs font-bold uppercase tracking-widest text-white shadow-lg shadow-black/40 transition hover:bg-[#7c5cff]">
                             {{ __('Conectar ahora') }}
                         </a>
                     </div>
@@ -166,7 +165,7 @@
                         <p id="connect-command" class="mt-2 break-all font-mono text-[10px] text-[#5b7cff] md:text-xs">connect {{ $server->ip }}:{{ $server->port }}</p>
                     </div>
 
-                    <a id="join-match-link" href="steam://connect/{{ $server->ip }}:{{ $server->port }}" class="mt-6 inline-block w-full rounded-sm bg-[#5b7cff] px-4 py-4 text-center text-sm font-bold uppercase tracking-widest text-white shadow-lg shadow-black/40 transition hover:bg-[#7c5cff]">
+                    <a id="join-match-link" data-lobby-connect-link href="steam://connect/{{ $server->ip }}:{{ $server->port }}" class="mt-6 inline-block w-full rounded-sm bg-[#5b7cff] px-4 py-4 text-center text-sm font-bold uppercase tracking-widest text-white shadow-lg shadow-black/40 transition hover:bg-[#7c5cff]">
                         {{ __('CONECTAR AL MATCH') }}
                     </a>
                 </div>
@@ -210,8 +209,8 @@
 <script>
 (() => {
     const csrfToken = @json(csrf_token());
-    const authUserId = @json(Auth::id());
     const isUnlimitedLobby = @json($isUnlimitedLobby);
+    const pendingLobbyLeaveKey = 'afterreload.pendingLobbyLeave';
 
     const urls = {
         status: @json(route('lobby.status', $server)),
@@ -247,9 +246,12 @@
     const joinTBtn = document.getElementById('join-t');
     const joinPublicBtn = document.getElementById('join-public');
     const leaveLobbyBtn = document.getElementById('leave-lobby');
-    const backToServerLink = document.querySelector('a[href="{{ route('servers.index') }}"]');
+    const backToServerLink = document.getElementById('back-to-servers');
 
     let pendingRequest = false;
+    let hasCleanedUp = false;
+    let hasSentLeave = false;
+    let connectIntentUntil = 0;
 
     const escapeHtml = (value) => String(value ?? '')
         .replaceAll('&', '&amp;')
@@ -262,11 +264,10 @@
         if (!container) return;
         
         let html = '';
-        // Real users
         users.forEach((user) => {
             const name = escapeHtml(user.name ?? 'Steam User');
             const avatar = escapeHtml(user.avatar ?? 'https://placehold.co/40x40');
-            const rank = escapeHtml(user.rank_points ?? 0);
+            const rank = escapeHtml(user.points ?? 0);
             html += `
                 <div class="relative flex items-center gap-3 rounded-sm border border-[#222222] bg-[#1b1b1b] px-3 py-2 md:px-4 md:py-3 transition hover:bg-[#222222]/50">
                     <img src="${avatar}" alt="Avatar ${name}" class="h-8 w-8 rounded-sm border ${borderClass} md:h-10 md:w-10">
@@ -278,7 +279,6 @@
             `;
         });
         
-        // Empty slots
         for (let i = users.length; i < max; i++) {
             html += `
                 <div class="flex items-center gap-3 rounded-sm border border-dashed border-[#222222] bg-transparent px-3 py-2 md:px-4 md:py-3 opacity-40">
@@ -303,7 +303,7 @@
         container.innerHTML = users.map((user) => {
             const name = escapeHtml(user.name ?? 'Steam User');
             const avatar = escapeHtml(user.avatar ?? 'https://placehold.co/40x40');
-            const rank = escapeHtml(user.rank_points ?? 0);
+            const rank = escapeHtml(user.points ?? 0);
             const readyBadge = user.is_ready
                 ? '<span class="absolute right-2 top-2 text-emerald-500"><svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg></span>'
                 : '';
@@ -516,31 +516,149 @@
         } catch (_error) {}
     };
 
+    let statusInterval = window.setInterval(refreshStatus, 3000);
+    const connectLinks = [joinMatchLink, publicJoinLink].filter(Boolean);
+
+    const cleanup = () => {
+        if (hasCleanedUp) {
+            return;
+        }
+
+        hasCleanedUp = true;
+        window.clearInterval(statusInterval);
+        window.removeEventListener('beforeunload', beforeUnloadHandler);
+        window.removeEventListener('pagehide', pageHideHandler);
+        window.removeEventListener('spa:before-navigate', spaNavigateHandler);
+    };
+
+    const currentUserIsInLobby = () => currentLobbyState.users.find((user) => user.is_current_user);
+
+    const markConnectIntent = () => {
+        connectIntentUntil = Date.now() + 15000;
+        window.setTimeout(() => {
+            if (Date.now() >= connectIntentUntil) {
+                connectIntentUntil = 0;
+            }
+        }, 15000);
+    };
+
+    const shouldSuppressAutoLeave = () => Date.now() < connectIntentUntil;
+
+    const sendLeaveKeepalive = () => {
+        if (hasSentLeave || shouldSuppressAutoLeave() || !currentUserIsInLobby()) {
+            return;
+        }
+
+        hasSentLeave = true;
+        window.localStorage.setItem(pendingLobbyLeaveKey, JSON.stringify({
+            url: urls.leave,
+            csrf: csrfToken,
+            timestamp: Date.now(),
+        }));
+
+        const formPayload = new URLSearchParams({
+            _token: csrfToken,
+        });
+
+        if (navigator.sendBeacon) {
+            const sent = navigator.sendBeacon(
+                urls.leave,
+                new Blob([formPayload.toString()], { type: 'application/x-www-form-urlencoded; charset=UTF-8' })
+            );
+
+            if (sent) {
+                return;
+            }
+        }
+
+        fetch(urls.leave, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            body: formPayload.toString(),
+            keepalive: true,
+            credentials: 'same-origin',
+        }).catch(() => {});
+    };
+
+    const pageHideHandler = () => {
+        if (shouldSuppressAutoLeave()) {
+            return;
+        }
+
+        if (currentUserIsInLobby()) {
+            sendLeaveKeepalive();
+        }
+    };
+
+    const beforeUnloadHandler = (event) => {
+        if (shouldSuppressAutoLeave() || !currentUserIsInLobby()) {
+            return;
+        }
+
+        event.preventDefault();
+        event.returnValue = '';
+    };
+
+    const spaNavigateHandler = () => {
+        if (currentUserIsInLobby()) {
+            hasSentLeave = true;
+            window.localStorage.removeItem(pendingLobbyLeaveKey);
+            sendJson(urls.leave, {}, true);
+        }
+        cleanup();
+    };
+
     if (joinCtBtn) joinCtBtn.addEventListener('click', async () => { const p = await sendJson(urls.team, { team: 'ct' }); if (p) applyPayload(p); });
     if (joinTBtn) joinTBtn.addEventListener('click', async () => { const p = await sendJson(urls.team, { team: 't' }); if (p) applyPayload(p); });
     if (toggleReadyBtn) toggleReadyBtn.addEventListener('click', async () => { const p = await sendJson(urls.ready); if (p) applyPayload(p); });
     if (joinPublicBtn) joinPublicBtn.addEventListener('click', async () => { const p = await sendJson(urls.team, { team: 'ct' }); if (p) applyPayload(p); });
-    if (leaveLobbyBtn) leaveLobbyBtn.addEventListener('click', async () => { const p = await sendJson(urls.leave); if (p?.left) window.location.href = urls.servers; });
+    if (leaveLobbyBtn) leaveLobbyBtn.addEventListener('click', async () => {
+        hasSentLeave = true;
+        window.localStorage.removeItem(pendingLobbyLeaveKey);
+        const p = await sendJson(urls.leave);
+        if (p?.left) {
+            cleanup();
+            window.location.href = urls.servers;
+        } else {
+            hasSentLeave = false;
+        }
+    });
+
+    connectLinks.forEach((link) => {
+        link.addEventListener('pointerdown', markConnectIntent);
+        link.addEventListener('click', () => {
+            window.localStorage.removeItem(pendingLobbyLeaveKey);
+            markConnectIntent();
+        });
+        link.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+                window.localStorage.removeItem(pendingLobbyLeaveKey);
+                markConnectIntent();
+            }
+        });
+    });
 
     if (backToServerLink) {
         backToServerLink.addEventListener('click', async (e) => {
             e.preventDefault();
-            const p = await sendJson(urls.leave);
-            window.location.href = urls.servers;
+            await sendJson(urls.leave);
+            cleanup();
+            if (window.loadPage) {
+                window.loadPage(urls.servers);
+            } else {
+                window.location.href = urls.servers;
+            }
         });
     }
 
-    window.addEventListener('beforeunload', (e) => {
-        const currentUserInLobby = currentLobbyState.users.find((user) => user.is_current_user);
-        if (currentUserInLobby) {
-            sendJson(urls.leave, {}, true);
-            e.preventDefault();
-            e.returnValue = '';
-        }
-    });
+    window.addEventListener('beforeunload', beforeUnloadHandler);
+    window.addEventListener('pagehide', pageHideHandler);
+    window.addEventListener('spa:before-navigate', spaNavigateHandler);
 
     applyPayload(currentLobbyState);
-    window.setInterval(refreshStatus, 3000);
 })();
 </script>
 @endsection

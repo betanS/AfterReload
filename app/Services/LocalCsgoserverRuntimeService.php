@@ -19,7 +19,7 @@ class LocalCsgoserverRuntimeService
             return null;
         }
 
-        return is_file($lockDir . '/' . $lockFile);
+        return is_file($lockDir.'/'.$lockFile);
     }
 
     private function resolveLockFile(Server $server): ?string
@@ -35,4 +35,3 @@ class LocalCsgoserverRuntimeService
         return is_string($lockFile) && $lockFile !== '' ? $lockFile : null;
     }
 }
-
