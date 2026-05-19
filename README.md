@@ -106,7 +106,7 @@ sudo systemctl restart nginx
 
 Si vas a controlar servidores locales, deja disponible la carpeta `csgoserver` dentro del proyecto y configura correctamente RCON, Get5 y la ruta de logs del servidor.
 
-## Resumen de instalación en Windows
+## Instalación en Windows
 
 Instala `Git for Windows`, `PHP 8.2+`, `Composer`, `Node.js` con `npm` y una base de datos compatible. Luego sigue la misma secuencia:
 
