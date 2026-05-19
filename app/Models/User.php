@@ -11,6 +11,20 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
+    protected $fillable = [
+        'steam_id',
+        'name',
+        'steam_nickname',
+        'steam_real_name',
+        'email',
+        'password',
+        'avatar',
+        'role',
+        'banned_at',
+        'points',
+        'credits',
+    ];
+
     protected $hidden = [
         'password',
         'remember_token',

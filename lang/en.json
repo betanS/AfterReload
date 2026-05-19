@@ -129,5 +129,17 @@
     "Última sincronización": "Last sync",
     "Nunca": "Never",
     "Guardar servidor": "Save server",
-    "No hay servidores configurados todavía.": "No servers configured yet."
+    "No hay servidores configurados todavía.": "No servers configured yet.",
+    "Ir a Servidores": "Go to Servers",
+    "Latencia": "Latency",
+    "Ecosistema": "Ecosystem",
+    "Diseñado para competir": "Designed to Compete",
+    "Algoritmos avanzados de detección para asegurar que cada partida sea justa y competitiva.": "Advanced detection algorithms to ensure every match is fair and competitive.",
+    "Elo Dinámico": "Dynamic Elo",
+    "Gana puntos basados en tu rendimiento individual y colectivo en cada match oficial.": "Earn points based on your individual and collective performance in every official match.",
+    "Skins & Rewards": "Skins & Rewards",
+    "Utiliza tus créditos ganados para desbloquear cosméticos exclusivos en nuestra tienda interna.": "Use your earned credits to unlock exclusive cosmetics in our internal store.",
+    "Uptime": "Uptime",
+    "Próximamente": "Coming Soon",
+    "No se pudo iniciar sesión con Steam. Inténtalo de nuevo.": "Could not sign in with Steam. Please try again."
 }

@@ -27,10 +27,18 @@
                 <span class="uppercase tracking-widest">{{ __('RANKING') }}</span>
             </a>
 
-            <a href="{{ route('store') }}" data-spa-link class="flex items-center gap-4 px-4 py-3 rounded-sm font-bold text-sm transition group {{ request()->routeIs('store') ? 'bg-[#5b7cff] text-white' : 'text-slate-400 hover:bg-[#222222] hover:text-white' }}">
-                <img src="{{ asset('icons/store.svg') }}" class="h-5 w-5 opacity-70 group-hover:opacity-100 {{ request()->routeIs('store') ? 'brightness-0 invert' : '' }}">
-                <span class="uppercase tracking-widest">{{ __('TIENDA') }}</span>
-            </a>
+            @if(auth()->check() && auth()->user()->canAccessStore())
+                <a href="{{ route('store') }}" data-spa-link class="flex items-center gap-4 px-4 py-3 rounded-sm font-bold text-sm transition group {{ request()->routeIs('store') ? 'bg-[#5b7cff] text-white' : 'text-slate-400 hover:bg-[#222222] hover:text-white' }}">
+                    <img src="{{ asset('icons/store.svg') }}" class="h-5 w-5 opacity-70 group-hover:opacity-100 {{ request()->routeIs('store') ? 'brightness-0 invert' : '' }}">
+                    <span class="uppercase tracking-widest">{{ __('TIENDA') }}</span>
+                </a>
+            @else
+                <div class="flex items-center gap-4 px-4 py-3 rounded-sm font-bold text-sm text-slate-600 cursor-not-allowed select-none">
+                    <img src="{{ asset('icons/store.svg') }}" class="h-5 w-5 opacity-30">
+                    <span class="uppercase tracking-widest flex-1">{{ __('TIENDA') }}</span>
+                    <span class="text-[9px] font-black uppercase tracking-widest text-[#5b7cff]/60 border border-[#5b7cff]/20 px-1.5 py-0.5 rounded-sm">{{ __('Próximamente') }}</span>
+                </div>
+            @endif
 
             <a href="{{ route('contact') }}" data-spa-link class="flex items-center gap-4 px-4 py-3 rounded-sm font-bold text-sm transition group {{ request()->routeIs('contact') ? 'bg-[#5b7cff] text-white' : 'text-slate-400 hover:bg-[#222222] hover:text-white' }}">
                 <svg class="h-5 w-5 opacity-70 group-hover:opacity-100 {{ request()->routeIs('contact') ? 'text-white' : 'text-slate-400' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
