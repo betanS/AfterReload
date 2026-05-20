@@ -16,19 +16,23 @@
                 <div>
                     <label class="text-[10px] uppercase font-black tracking-[0.2em] text-[#5b7cff] mb-2 block">{{ __('Nombre') }}</label>
                     <input id="contact-name" type="text" class="w-full rounded-sm border border-[#222222] bg-[#121212] p-4 text-sm text-white placeholder-slate-700 focus:border-[#5b7cff] outline-none transition" placeholder="{{ __('Introduce tu nombre') }}">
+                    <span id="error-name" class="hidden mt-1 block text-[11px] font-bold text-red-500"></span>
                 </div>
                 <div>
                     <label class="text-[10px] uppercase font-black tracking-[0.2em] text-[#5b7cff] mb-2 block">{{ __('Email') }}</label>
                     <input id="contact-email" type="email" class="w-full rounded-sm border border-[#222222] bg-[#121212] p-4 text-sm text-white placeholder-slate-700 focus:border-[#5b7cff] outline-none transition" placeholder="tu@email.com">
+                    <span id="error-email" class="hidden mt-1 block text-[11px] font-bold text-red-500"></span>
                 </div>
             </div>
             <div>
                 <label class="text-[10px] uppercase font-black tracking-[0.2em] text-[#5b7cff] mb-2 block">{{ __('Asunto / Incidencia') }}</label>
                 <input id="contact-subject" type="text" class="w-full rounded-sm border border-[#222222] bg-[#121212] p-4 text-sm text-white placeholder-slate-700 focus:border-[#5b7cff] outline-none transition" placeholder="{{ __('Resumen de la incidencia') }}">
+                <span id="error-subject" class="hidden mt-1 block text-[11px] font-bold text-red-500"></span>
             </div>
             <div>
                 <label class="text-[10px] uppercase font-black tracking-[0.2em] text-[#5b7cff] mb-2 block">{{ __('Mensaje') }}</label>
                 <textarea id="contact-message" rows="5" class="w-full rounded-sm border border-[#222222] bg-[#121212] p-4 text-sm text-white placeholder-slate-700 focus:border-[#5b7cff] outline-none transition" placeholder="{{ __('Escribe tu mensaje aquí...') }}"></textarea>
+                <span id="error-message" class="hidden mt-1 block text-[11px] font-bold text-red-500"></span>
             </div>
             <button id="contact-submit" type="button" class="w-full rounded-sm bg-[#5b7cff] py-4 text-sm font-black uppercase tracking-widest text-white hover:bg-[#7c5cff] shadow-lg shadow-black/40 transition">
                 {{ __('Enviar Mensaje') }}
@@ -69,6 +73,52 @@
     const closeButtons = [document.getElementById('contact-close'), document.getElementById('contact-close-alt')];
     const copyButton = document.getElementById('contact-copy');
 
+    const fields = [
+        { id: 'contact-name',    errorId: 'error-name',    msg: '{{ __('El nombre es obligatorio') }}' },
+        { id: 'contact-email',   errorId: 'error-email',   msg: '{{ __('Introduce un email válido') }}' },
+        { id: 'contact-subject', errorId: 'error-subject', msg: '{{ __('El asunto es obligatorio') }}' },
+        { id: 'contact-message', errorId: 'error-message', msg: '{{ __('El mensaje es obligatorio') }}' },
+    ];
+
+    const setError = (errorEl, input, msg) => {
+        errorEl.textContent = msg;
+        errorEl.classList.remove('hidden');
+        input.classList.add('border-red-500');
+        input.classList.remove('border-[#222222]');
+    };
+
+    const clearError = (errorEl, input) => {
+        errorEl.classList.add('hidden');
+        input.classList.remove('border-red-500');
+        input.classList.add('border-[#222222]');
+    };
+
+    const isValidEmail = (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+
+    const validate = () => {
+        let ok = true;
+        fields.forEach(({ id, errorId, msg }) => {
+            const input = document.getElementById(id);
+            const errorEl = document.getElementById(errorId);
+            const val = input.value.trim();
+            const invalid = id === 'contact-email' ? !isValidEmail(val) : val === '';
+            if (invalid) { setError(errorEl, input, msg); ok = false; }
+            else { clearError(errorEl, input); }
+        });
+        return ok;
+    };
+
+    // Limpiar error en tiempo real al escribir
+    fields.forEach(({ id, errorId }) => {
+        const input = document.getElementById(id);
+        const errorEl = document.getElementById(errorId);
+        input.addEventListener('input', () => {
+            const val = input.value.trim();
+            const invalid = id === 'contact-email' ? !isValidEmail(val) : val === '';
+            if (!invalid) clearError(errorEl, input);
+        });
+    });
+
     const buildMessage = () => {
         const name = document.getElementById('contact-name').value.trim();
         const email = document.getElementById('contact-email').value.trim();
@@ -79,6 +129,7 @@
     };
 
     const openModal = () => {
+        if (!validate()) return;
         preview.textContent = buildMessage();
         modal.classList.remove('hidden');
         modal.classList.add('flex');
