@@ -1,6 +1,6 @@
 # AfterReload
 
-Aplicación Laravel para matchmaking y gestión de servidores de juego.
+Plataforma web de matchmaking para comunidades de CS:GO Legacy. Centraliza la autenticación de jugadores via Steam, la gestión de lobbies, el control remoto de servidores mediante RCON, la integración con Get5 para partidas competitivas y el procesamiento automático de resultados en servidores públicos.
 
 ## Instalación en Linux
 
@@ -48,15 +48,28 @@ Ajusta como mínimo estas variables:
 APP_NAME=AfterReload
 APP_URL=http://TU_DOMINIO_O_IP
 DB_CONNECTION=sqlite
+
 STEAM_CLIENT_ID=
 STEAM_CLIENT_SECRET=
 STEAM_REDIRECT_URL=http://TU_DOMINIO_O_IP/login/steam/callback
+
 ADMIN_STEAM_ID=
 ADMIN_STEAM_IDS=
+
 GET5_WEBHOOK_TOKEN=
+GET5_DEFAULT_MAP=de_mirage
+
 RCON_HOST=
 RCON_PORT=
 RCON_PASSWORD=
+
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=
+MAIL_PASSWORD=
+MAIL_FROM_ADDRESS=
+MAIL_FROM_NAME=AfterReload
 ```
 
 Si usas MySQL o MariaDB, cambia `DB_CONNECTION` y completa `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME` y `DB_PASSWORD`.
@@ -117,6 +130,7 @@ composer install
 npm install
 copy .env.example .env
 php artisan key:generate
+type nul > database\database.sqlite
 php artisan migrate --force
 npm run build
 php artisan serve
