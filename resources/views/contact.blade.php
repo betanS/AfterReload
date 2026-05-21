@@ -38,41 +38,17 @@
                 {{ __('Enviar Mensaje') }}
             </button>
         </form>
-    </div>
-</div>
 
-<div id="contact-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-[#121212]/95 backdrop-blur-md px-6">
-    <div class="w-full max-w-xl rounded-sm border border-[#222222] bg-[#1b1b1b] p-8 shadow-2xl">
-        <div class="flex items-center justify-between border-b border-[#222222] pb-4 mb-6">
-            <h3 class="text-xl font-black uppercase italic tracking-tight text-white">{{ __('Soporte Manual') }}</h3>
-            <button id="contact-close" class="text-slate-500 hover:text-white transition">
-                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-            </button>
-        </div>
-        <p class="text-sm text-slate-400 font-medium leading-relaxed">
-            {{ __('El sistema de contacto automatizado está en mantenimiento. Por favor, copia este reporte y envíalo vía Discord a') }} <span class="font-bold text-[#5b7cff]">betans</span>.
-        </p>
-        <div class="mt-6 rounded-sm border border-[#222222] bg-[#121212] p-5">
-            <pre id="contact-preview" class="whitespace-pre-wrap font-mono text-[11px] text-slate-300"></pre>
-        </div>
-        <div class="mt-8 flex flex-col sm:flex-row gap-3">
-            <button id="contact-copy" type="button" class="flex-1 rounded-sm bg-[#5b7cff] px-6 py-3 text-[11px] font-black uppercase tracking-widest text-white hover:bg-[#7c5cff] transition">
-                {{ __('Copiar Reporte') }}
-            </button>
-            <button id="contact-close-alt" type="button" class="flex-1 rounded-sm border border-[#222222] bg-[#1b1b1b] px-6 py-3 text-[11px] font-black uppercase tracking-widest text-white hover:bg-[#222222] transition">
-                {{ __('Volver') }}
-            </button>
+        <div id="contact-success" class="hidden mt-6 rounded-sm border border-green-800 bg-green-900/20 p-5 text-center">
+            <svg class="mx-auto mb-3 h-10 w-10 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+            <p class="text-sm font-bold text-green-400">{{ __('Mensaje enviado correctamente.') }}</p>
+            <p class="mt-1 text-xs text-slate-400">{{ __('Te responderemos lo antes posible.') }}</p>
         </div>
     </div>
 </div>
 
 <script>
 (() => {
-    const modal = document.getElementById('contact-modal');
-    const preview = document.getElementById('contact-preview');
-    const closeButtons = [document.getElementById('contact-close'), document.getElementById('contact-close-alt')];
-    const copyButton = document.getElementById('contact-copy');
-
     const fields = [
         { id: 'contact-name',    errorId: 'error-name',    msg: '{{ __('El nombre es obligatorio') }}' },
         { id: 'contact-email',   errorId: 'error-email',   msg: '{{ __('Introduce un email válido') }}' },
@@ -108,7 +84,6 @@
         return ok;
     };
 
-    // Limpiar error en tiempo real al escribir
     fields.forEach(({ id, errorId }) => {
         const input = document.getElementById(id);
         const errorEl = document.getElementById(errorId);
@@ -119,77 +94,33 @@
         });
     });
 
-    const buildMessage = () => {
-        const name = document.getElementById('contact-name').value.trim();
-        const email = document.getElementById('contact-email').value.trim();
-        const subject = document.getElementById('contact-subject').value.trim();
-        const message = document.getElementById('contact-message').value.trim();
+    const submitBtn = document.getElementById('contact-submit');
 
-        return `--- REPORT AFTERRELOAD ---\n{{ __('Nombre') }}: ${name || 'N/A'}\nEmail: ${email || 'N/A'}\n{{ __('Asunto') }}: ${subject || 'N/A'}\n\n{{ __('Mensaje') }}:\n${message || 'N/A'}\n-------------------------`;
-    };
-
-    const openModal = () => {
+    submitBtn.addEventListener('click', async () => {
         if (!validate()) return;
-        preview.textContent = buildMessage();
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-    };
 
-    const closeModal = () => {
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
-        copyButton.textContent = '{{ __('Copiar Reporte') }}';
-    };
-
-    const fallbackCopy = (text) => {
-        const textarea = document.createElement('textarea');
-        textarea.value = text;
-        textarea.style.position = 'fixed';
-        textarea.style.opacity = '0';
-        document.body.appendChild(textarea);
-        textarea.focus();
-        textarea.select();
-        try {
-            document.execCommand('copy');
-            return true;
-        } catch (error) {
-            return false;
-        } finally {
-            document.body.removeChild(textarea);
-        }
-    };
-
-    document.getElementById('contact-submit').addEventListener('click', openModal);
-
-    closeButtons.forEach((btn) => {
-        btn.addEventListener('click', closeModal);
-    });
-
-    modal.addEventListener('click', (event) => {
-        if (event.target === modal) {
-            closeModal();
-        }
-    });
-
-    copyButton.addEventListener('click', async () => {
-        const text = preview.textContent;
-        let copied = false;
+        submitBtn.disabled = true;
+        submitBtn.textContent = '{{ __('Enviando...') }}';
 
         try {
-            if (navigator.clipboard && window.isSecureContext) {
-                await navigator.clipboard.writeText(text);
-                copied = true;
-            } else {
-                copied = fallbackCopy(text);
-            }
-        } catch (error) {
-            copied = fallbackCopy(text);
-        }
+            await fetch('{{ route('contact.send') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content ?? '',
+                },
+                body: JSON.stringify({
+                    name:    document.getElementById('contact-name').value.trim(),
+                    email:   document.getElementById('contact-email').value.trim(),
+                    subject: document.getElementById('contact-subject').value.trim(),
+                    message: document.getElementById('contact-message').value.trim(),
+                }),
+            });
+        } catch (_) {}
 
-        copyButton.textContent = copied ? '{{ __('Copiado con éxito') }}' : '{{ __('Error al copiar') }}';
-        setTimeout(() => {
-            copyButton.textContent = '{{ __('Copiar Reporte') }}';
-        }, 2000);
+        document.getElementById('contact-form').classList.add('hidden');
+        document.getElementById('contact-success').classList.remove('hidden');
     });
 })();
 </script>

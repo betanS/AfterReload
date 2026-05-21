@@ -10,13 +10,14 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/lang/{locale}', [LanguageController::class, 'switch'])->name('lang.switch');
 
-Route::get('/', fn () => view('welcome'))->name('welcome');
+Route::get('/', fn () => view('welcome', ['userCount' => \App\Models\User::count()]))->name('welcome');
 Route::get('/login', fn () => redirect()->route('login.steam'))->name('login');
 
 Route::get('/login/steam', [SteamController::class, 'redirectToSteam'])->name('login.steam');
 Route::get('/login/steam/callback', [SteamController::class, 'handleSteamCallback'])->name('login.steam.callback');
 
 Route::get('/contact', fn () => view('contact'))->name('contact');
+Route::post('/contact', [App\Http\Controllers\ContactController::class, 'send'])->name('contact.send');
 
 Route::get('/ranking', [RankingController::class, 'index'])->name('ranking');
 
@@ -29,7 +30,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/servers/data', [ServerController::class, 'data'])->name('servers.data');
 
     Route::get('/profile', fn () => view('profile'))->name('profile');
-    Route::get('/inventory', fn () => view('inventory'))->name('inventory');
+    Route::get('/inventory', function () {
+        if (! auth()->user()->canAccessInventory()) {
+            abort(403);
+        }
+        return view('inventory');
+    })->name('inventory');
     Route::get('/store', fn () => view('store'))->name('store');
 
     Route::get('/lobby/{server}', [LobbyController::class, 'show'])->name('lobby.show');
@@ -50,5 +56,6 @@ Route::middleware('auth')->group(function () {
         Route::post('/users/{user}/unban', [AdminController::class, 'unban'])->name('users.unban');
     });
 
+    Route::delete('/account', [App\Http\Controllers\AccountController::class, 'destroy'])->name('account.delete');
     Route::post('/logout', [SteamController::class, 'logout'])->name('logout');
 });

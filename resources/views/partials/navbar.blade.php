@@ -55,7 +55,14 @@
                             </summary>
                             <div class="absolute right-0 mt-2 w-52 rounded-sm border border-[#222222] bg-[#1b1b1b] shadow-2xl z-50 p-1">
                                 <a href="{{ route('profile') }}" class="block rounded-sm px-3 py-2 text-sm text-slate-200 hover:bg-[#222222] transition">Mi Perfil</a>
-                                <a href="{{ route('inventory') }}" class="block rounded-sm px-3 py-2 text-sm text-slate-200 hover:bg-[#222222] transition">Inventario</a>
+                                @if(auth()->user()->canAccessInventory())
+                                    <a href="{{ route('inventory') }}" class="block rounded-sm px-3 py-2 text-sm text-slate-200 hover:bg-[#222222] transition">Inventario</a>
+                                @else
+                                    <div class="flex items-center justify-between rounded-sm px-3 py-2 text-sm text-slate-600 cursor-not-allowed select-none">
+                                        <span>Inventario</span>
+                                        <span class="text-[9px] font-black uppercase tracking-widest text-[#5b7cff]/60 border border-[#5b7cff]/20 px-1.5 py-0.5 rounded-sm">{{ __('Próximamente') }}</span>
+                                    </div>
+                                @endif
                                 <div class="h-px bg-[#222222] my-1"></div>
                                 <form method="POST" action="{{ route('logout') }}">
                                     @csrf
@@ -135,7 +142,14 @@
 
                 <div class="flex flex-col gap-2">
                     <a href="{{ route('profile') }}" class="px-5 py-3 text-slate-400 font-semibold">Mi Perfil</a>
-                    <a href="{{ route('inventory') }}" class="px-5 py-3 text-slate-400 font-semibold">Mi Inventario</a>
+                    @if(auth()->user()->canAccessInventory())
+                        <a href="{{ route('inventory') }}" class="px-5 py-3 text-slate-400 font-semibold">Mi Inventario</a>
+                    @else
+                        <div class="flex items-center justify-between px-5 py-3 text-slate-600 font-semibold cursor-not-allowed select-none">
+                            <span>Mi Inventario</span>
+                            <span class="text-[9px] font-black uppercase tracking-widest text-[#5b7cff]/60 border border-[#5b7cff]/20 px-1.5 py-0.5 rounded-sm">{{ __('Próximamente') }}</span>
+                        </div>
+                    @endif
                     <form method="POST" action="{{ route('logout') }}" class="mt-4">
                         @csrf
                         <button type="submit" class="w-full rounded-sm bg-[#1b1b1b] py-4 font-bold text-red-500">Cerrar Sesión</button>

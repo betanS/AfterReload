@@ -62,6 +62,11 @@ class User extends Authenticatable
         return $this->isAdmin();
     }
 
+    public function canAccessInventory(): bool
+    {
+        return $this->isAdmin();
+    }
+
     public function isBetaTester(): bool
     {
         return $this->role === 'betatester';

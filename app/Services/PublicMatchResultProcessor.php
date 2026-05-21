@@ -111,6 +111,19 @@ class PublicMatchResultProcessor
             $winnerSteamIds = $playerSteamIdsByTeam->get($winnerTeam, []);
             $loserSteamIds = $playerSteamIdsByTeam->get($loserTeam, []);
 
+            $lobbyUserSteamIds = $serverId
+                ? \App\Models\Lobby::query()
+                    ->where('server_id', $serverId)
+                    ->whereIn('status', ['waiting', 'live'])
+                    ->get()
+                    ->flatMap(fn ($lobby) => $lobby->users()->pluck('steam_id'))
+                    ->unique()
+                    ->all()
+                : [];
+
+            $winnerSteamIds = array_intersect($winnerSteamIds, $lobbyUserSteamIds);
+            $loserSteamIds  = array_intersect($loserSteamIds, $lobbyUserSteamIds);
+
             $winnerUsers = User::query()->whereIn('steam_id', $winnerSteamIds)->get();
             $loserUsers = User::query()->whereIn('steam_id', $loserSteamIds)->get();
 

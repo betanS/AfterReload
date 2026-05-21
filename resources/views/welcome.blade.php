@@ -51,7 +51,7 @@
                     
                     <div class="mt-20 grid grid-cols-3 gap-8 border-t border-[#222222] pt-12 max-w-lg">
                         <div>
-                            <p class="text-2xl font-black text-white italic">1.2k+</p>
+                            <p class="text-2xl font-black text-white italic">{{ $userCount }}</p>
                             <p class="text-[10px] uppercase font-bold text-slate-500 tracking-widest">{{ __('Jugadores') }}</p>
                         </div>
                         <div>

@@ -44,26 +44,51 @@
         </div>
         
         <div class="mt-12 pt-8 border-t border-[#222222]">
-            <h3 class="text-xs font-bold uppercase tracking-[0.3em] text-slate-500 mb-6">{{ __('Estadísticas de Temporada') }}</h3>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div class="bg-[#121212] p-4 border border-[#222222] rounded-sm">
-                    <p class="text-[9px] uppercase font-bold text-slate-600 tracking-widest">{{ __('Partidas') }}</p>
-                    <p class="text-lg font-black text-white">0</p>
-                </div>
-                <div class="bg-[#121212] p-4 border border-[#222222] rounded-sm">
-                    <p class="text-[9px] uppercase font-bold text-slate-600 tracking-widest">{{ __('Win Rate') }}</p>
-                    <p class="text-lg font-black text-emerald-500">0%</p>
-                </div>
-                <div class="bg-[#121212] p-4 border border-[#222222] rounded-sm">
-                    <p class="text-[9px] uppercase font-bold text-slate-600 tracking-widest">{{ __('K/D Ratio') }}</p>
-                    <p class="text-lg font-black text-white">0.00</p>
-                </div>
-                <div class="bg-[#121212] p-4 border border-[#222222] rounded-sm">
-                    <p class="text-[9px] uppercase font-bold text-slate-600 tracking-widest">{{ __('MVP\'s') }}</p>
-                    <p class="text-lg font-black text-[#5b7cff]">0</p>
-                </div>
-            </div>
+            <h3 class="text-xs font-bold uppercase tracking-[0.3em] text-red-500/70 mb-4">{{ __('Zona de peligro') }}</h3>
+            <p class="text-xs text-slate-500 mb-4">{{ __('Esta acción eliminará tu cuenta y todos tus datos permanentemente. No se puede deshacer.') }}</p>
+            <button id="delete-account-btn" type="button" class="rounded-sm border border-red-800 bg-red-950/30 px-6 py-3 text-xs font-black uppercase tracking-widest text-red-500 hover:bg-red-900/40 transition">
+                {{ __('Eliminar mi cuenta') }}
+            </button>
         </div>
     </div>
 </div>
+
+<div id="delete-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-[#121212]/95 backdrop-blur-md px-6">
+    <div class="w-full max-w-md rounded-sm border border-red-900 bg-[#1b1b1b] p-8 shadow-2xl">
+        <h3 class="text-lg font-black uppercase italic tracking-tight text-white mb-3">{{ __('¿Eliminar cuenta?') }}</h3>
+        <p class="text-sm text-slate-400 mb-8">{{ __('Se borrarán todos tus datos, puntos y posición en el ranking. Esta acción es irreversible.') }}</p>
+        <div class="flex gap-3">
+            <form method="POST" action="{{ route('account.delete') }}" class="flex-1">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="w-full rounded-sm bg-red-700 px-6 py-3 text-xs font-black uppercase tracking-widest text-white hover:bg-red-600 transition">
+                    {{ __('Sí, eliminar') }}
+                </button>
+            </form>
+            <button id="delete-cancel" type="button" class="flex-1 rounded-sm border border-[#222222] bg-[#1b1b1b] px-6 py-3 text-xs font-black uppercase tracking-widest text-white hover:bg-[#222222] transition">
+                {{ __('Cancelar') }}
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+(() => {
+    const modal = document.getElementById('delete-modal');
+    document.getElementById('delete-account-btn').addEventListener('click', () => {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    });
+    document.getElementById('delete-cancel').addEventListener('click', () => {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    });
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+    });
+})();
+</script>
 @endsection
