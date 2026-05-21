@@ -22,7 +22,7 @@ sudo apt install -y lib32gcc-s1 lib32stdc++6
 ### 2. Clonar el proyecto
 
 ```bash
-git clone <URL_DEL_REPOSITORIO> afterreload
+git clone https://github.com/betanS/AfterReload afterreload
 cd afterreload
 ```
 
@@ -111,7 +111,7 @@ Si vas a controlar servidores locales, deja disponible la carpeta `csgoserver` d
 Instala `Git for Windows`, `PHP 8.2+`, `Composer`, `Node.js` con `npm` y una base de datos compatible. Luego sigue la misma secuencia:
 
 ```bash
-git clone <URL_DEL_REPOSITORIO> afterreload
+git clone https://github.com/betanS/AfterReload afterreload
 cd afterreload
 composer install
 npm install
